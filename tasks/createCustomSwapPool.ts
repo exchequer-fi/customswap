@@ -13,7 +13,8 @@ async function main() {
     const factoryAddress: string = '0x8443D52547D312f82F0CB21f9B9481c887fD45B8';
     const xcrAddress: string = '0x9F205c61DA8eE3be4805B15b003b4732603f3631';
     const usdcAddress: string = '0xD87Ba7A50B2E7E660f678A895E4B72E7CB4CCd9C';
-    const rpAddress: string = '0x5C19e84230344518dFB1F38e6D8002F77E730C9d';
+    const xcrRpAddress: string = '0x5C19e84230344518dFB1F38e6D8002F77E730C9d';
+    const usdcRPAddress: string = '0xC2B0fc4F1A12566E680648832857FDBD48e09E92';
 
     // console.log("network: ", await ethers.provider.getNetwork());
 
@@ -34,17 +35,17 @@ async function main() {
 
     console.log("A1: %d A2: %d D: %d fee: %s", A1, A2, MONTH, swapFee);
 
-    const gasPrice = ethers.BigNumber.from(10).pow(9).mul(25).div(10);
-    const gasLimit = ethers.BigNumber.from(10).pow(7).mul(3);
-    const cost = gasLimit.mul(gasPrice);
-
-    console.log("gasPrice: %s wei / %s Gwei", gasPrice, utils.formatUnits(gasPrice, "gwei"));
-    console.log("gasLimit: %s ops", gasLimit);
-    console.log("totalCost: %s wei / %s Gwei / %s eth",
-        cost,
-        utils.formatUnits(cost, "gwei"),
-        utils.formatEther(cost)
-    );
+    // const gasPrice = ethers.BigNumber.from(10).pow(9).mul(25).div(10);
+    // const gasLimit = ethers.BigNumber.from(10).pow(7).mul(3);
+    // const cost = gasLimit.mul(gasPrice);
+    //
+    // console.log("gasPrice: %s wei / %s Gwei", gasPrice, utils.formatUnits(gasPrice, "gwei"));
+    // console.log("gasLimit: %s ops", gasLimit);
+    // console.log("totalCost: %s wei / %s Gwei / %s eth",
+    //     cost,
+    //     utils.formatUnits(cost, "gwei"),
+    //     utils.formatEther(cost)
+    // );
 
     let tx = await contract.create(
         "XCQR CustomSwap XCR/USDC",
@@ -52,12 +53,12 @@ async function main() {
         [xcrAddress, usdcAddress],
         A1,
         A2,
-        [rpAddress, rpAddress],
+        [xcrRpAddress, usdcRPAddress],
         [MONTH, MONTH],
         [false, false],
         swapFee,
         admin.address,
-        {gasPrice: gasPrice}
+        // {gasPrice: gasPrice}
     );
 
     //console.log("tx: ", tx);

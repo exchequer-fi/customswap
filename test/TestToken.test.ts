@@ -26,18 +26,18 @@ describe("Token contract", function () {
     // Network to that snapshot in every test.
     async function deployTokenFixture() {
         // Get the ContractFactory and Signers here.
-        const Token = await ethers.getContractFactory("XCQRToken");
+        const factory = await ethers.getContractFactory("TestToken");
         const [owner, addr1, addr2] = await ethers.getSigners();
 
         // To deploy our contract, we just have to call Token.deploy() and await
         // its deployed() method, which happens once its transaction has been
         // mined.
-        const hardhatToken = await Token.deploy();
+        const hardhatToken = await factory.deploy();
 
         await hardhatToken.deployed();
 
         // Fixtures can return anything you consider useful for your tests
-        return {Token, hardhatToken, owner, addr1, addr2};
+        return {Token: factory, hardhatToken, owner, addr1, addr2};
     }
 
     // You can nest describe calls to create subsections.

@@ -1,4 +1,4 @@
-import hre, {ethers} from "hardhat";
+import {ethers} from "hardhat";
 
 async function main() {
 
@@ -8,7 +8,7 @@ async function main() {
 
     const contract = await factory.attach(address);
 
-    const decimals = hre.ethers.BigNumber.from(10).pow(18);
+    const decimals = ethers.BigNumber.from(10).pow(18);
 
     const [deployer] = await ethers.getSigners();
 

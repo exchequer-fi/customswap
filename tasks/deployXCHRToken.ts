@@ -9,7 +9,7 @@ async function main() {
 
     const decimals = hre.ethers.BigNumber.from(10).pow(18);
 
-    const contract = await factory.deploy("Exchequer Test Token", "XCR", 18);
+    const contract = await factory.deploy("Exchequer Test Token", "XCHR", 18);
 
     console.log("XCR token address:", contract.address);
 

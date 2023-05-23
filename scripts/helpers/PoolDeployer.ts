@@ -1,0 +1,142 @@
+import {ethers} from "hardhat";
+import {ContractReceipt} from "ethers";
+import {fp} from "../../test/helpers/numbers";
+import {scaleUp} from "./biggy";
+import {TokenDeployer} from "./TokenDeployer";
+
+export class PoolDeployer {
+
+    public readonly customMath: string;
+
+    public readonly desc: string = "XCQR CustomSwap XCQR/USDC";
+    public readonly symbol: string = "BPTT";
+    public readonly A1: number = 400;
+    public readonly A2: number = 400;
+    public readonly MONTH = 30 * 24 * 60 * 60;
+    public readonly swapFee = ethers.BigNumber.from(10).pow(16);
+
+    public readonly maxYieldValue = fp(0.5);
+    public readonly maxAUMValue = fp(0.5);
+
+    public readonly xcqrRate: number = 3;
+    public readonly usdcRate: number = 1;
+
+    constructor(customMath: string) {
+        this.customMath = customMath;
+    }
+
+    private async deployProtocolFeeProvider(vault: string) {
+        const factory = await ethers.getContractFactory("ProtocolFeePercentagesProvider");
+        const contract = await factory.deploy(
+            vault,
+            this.maxYieldValue,
+            this.maxAUMValue
+        );
+        return contract.deployed();
+    }
+
+    private async deployRateProvider() {
+        const factory = await ethers.getContractFactory("CustomPoolRateProvider");
+        const contract = await factory.deploy();
+        return contract.deployed();
+    }
+
+    private async attachCustomSwapFactory(address: string) {
+        const factory = await ethers.getContractFactory("ComposableCustomPoolFactory", {
+            libraries: {
+                CustomMath: this.customMath
+            }
+        });
+        const contract = await factory.attach(address);
+        return contract.deployed();
+    }
+
+    private async deployCustomSwapFactory(vaultAddress: string) {
+        const factory = await ethers.getContractFactory("ComposableCustomPoolFactory", {
+            libraries: {
+                CustomMath: this.customMath
+            }
+        });
+        const protocolFeeProvider = await this.deployProtocolFeeProvider(vaultAddress);
+        const contract = await factory.deploy(vaultAddress, protocolFeeProvider.address);
+        return contract.deployed();
+    }
+
+    private getCreatedPoolId(receipt: ContractReceipt) {
+        if (receipt.events == undefined) return undefined;
+        for (let i = 0; i < receipt.events.length; i++) {
+            let event = receipt.events[i];
+            if (event.event == 'PoolCreated') {
+                let args = event.args!;
+                return args.at(0);
+            }
+        }
+    }
+
+    private async attachPool(address: string) {
+        const factory = await ethers.getContractFactory("ComposableCustomPool", {
+                libraries: {
+                    CustomMath: this.customMath
+                }
+            }
+        );
+        const contract = await factory.attach(address);
+        return contract.deployed();
+    }
+
+    public async deployPool(vaultAddress: string, tokens: string[], admin: string) {
+
+        const factory = await this.deployCustomSwapFactory(vaultAddress);
+
+        tokens.sort((one, two) => (one.toUpperCase() > two.toUpperCase() ? 1 : -1));
+
+        console.log("provider rates");
+
+        let providers: string[] = [];
+        for (let i = 0; i < tokens.length; i++) {
+            const a = tokens[i];
+            const p = await this.deployRateProvider();
+            const t = await new TokenDeployer().attachToken(a);
+            const s = await t.symbol();
+            // Always return 18 even if the token t.decimals() is not 18
+            const d: number = 18;
+            let r0;
+            switch (s) {
+                case "USDC":
+                    r0 = scaleUp(this.usdcRate, d);
+                    break;
+                case "XCHR":
+                    r0 = scaleUp(this.xcqrRate, d);
+                    break;
+                default:
+                    r0 = 0;
+                    break
+            }
+            await p.setRate(r0);
+            const r1 = await p.getRate();
+            providers.push(p.address);
+            console.log(s, t.address, r1.toString());
+        }
+
+        const tx = await factory.create(
+            this.desc,
+            this.symbol,
+            tokens,
+            this.A1,
+            this.A2,
+            providers,
+            [this.MONTH, this.MONTH],
+            [false, false],
+            this.swapFee,
+            admin
+        );
+
+        let receipt = await tx.wait();
+
+        let newPoolId = this.getCreatedPoolId(receipt);
+
+        return await this.attachPool(newPoolId);
+
+    }
+
+}

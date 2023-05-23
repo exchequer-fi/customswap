@@ -6,7 +6,7 @@ const API_KEY: string = process.env.GOERLI_API_KEY!;
 const PRIVATE_KEY: string = process.env.GOERLI_PRIVATE_KEY!;
 const CONTRACT_ADDRESS: string = '0x5C19e84230344518dFB1F38e6D8002F77E730C9d';
 
-const contract = require("../../../../Projects/boot/xcqr-customswap/artifacts/contracts/rate-provider/XCQRRateProvider.sol/XCQRRateProvider.json");
+const contract = require("../../../Projects/boot/xcqr-customswap/artifacts/contracts/rate-provider/XCQRRateProvider.sol/XCQRRateProvider.json");
 const hre = require("hardhat");
 
 // Provider

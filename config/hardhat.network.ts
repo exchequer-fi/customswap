@@ -5,6 +5,7 @@ dotenv.config()
 
 const GOERLI_API_KEY: string = process.env.GOERLI_API_KEY!;
 const GOERLI_PRIVATE_KEY = process.env.GOERLI_PRIVATE_KEY!;
+const GOERLI_ADDRESS = process.env.GOERLI_ADDRESS;
 
 const SEPOLIA_API_KEY: string = process.env.SEPOLIA_API_KEY!;
 const SEPOLIA_PRIVATE_KEY = process.env.SEPOLIA_PRIVATE_KEY!;
@@ -15,21 +16,20 @@ export const hardhatNetworkConfig = {
     networks: {
         localhost: {
             url: "http://127.0.0.1:8545",
-            // allowUnlimitedContractSize: true,
-            // throwOnTransactionFailures: true,
-            // throwOnCallFailures: true,
+            // from: "0xd713Eef55104c67cA1A6a1dB617FaeE1831cF5e3",//`${GOERLI_ADDRESS}`,
+            // accounts: "remote"
+            allowUnlimitedContractSize: true,
+            throwOnTransactionFailures: true,
+            throwOnCallFailures: true,
             // gas: 12000000,
             // blockGasLimit: 0x1fffffffffffff,
             // timeout: 1800000
         },
         hardhat: {
             chainId: 1337, // We set 1337 to make interacting with MetaMask simpler
-            // throwOnTransactionFailures: true,
-            // throwOnCallFailures: true,
-            // allowUnlimitedContractSize: true,
-            // gas: 12000000,
-            // blockGasLimit: 0x1fffffffffffff,
-            // timeout: 1800000
+            allowUnlimitedContractSize: true,
+            throwOnTransactionFailures: true,
+            throwOnCallFailures: true,
         },
         goerli: {
             chainId: 5,

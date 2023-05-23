@@ -8,7 +8,7 @@ describe("Rate Provider contract", function () {
     let decimals = hre.ethers.BigNumber.from(10).pow(18)
 
     async function deployRateProviderFixture() {
-        const factory = await hre.ethers.getContractFactory("XCQRRateProvider");
+        const factory = await hre.ethers.getContractFactory("CustomPoolRateProvider");
         const [owner, addr1, addr2] = await hre.ethers.getSigners();
         const rateProvider = await factory.deploy();
         await rateProvider.deployed();
