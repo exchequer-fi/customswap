@@ -1,6 +1,6 @@
-const {expect} = require("chai");
+import {loadFixture} from "@nomicfoundation/hardhat-network-helpers";
+import {expect} from "chai";
 
-const {loadFixture} = require("@nomicfoundation/hardhat-network-helpers");
 const hre = require("hardhat");
 
 describe("Rate Provider contract", function () {

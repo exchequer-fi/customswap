@@ -1,12 +1,12 @@
-import dotenv from "dotenv";
+import {config as dotEnvConfig} from "dotenv";
 
-dotenv.config();
+dotEnvConfig();
 
 const API_KEY: string = process.env.GOERLI_API_KEY!;
 const PRIVATE_KEY: string = process.env.GOERLI_PRIVATE_KEY!;
 const CONTRACT_ADDRESS: string = '0x5C19e84230344518dFB1F38e6D8002F77E730C9d';
 
-const contract = require("../artifacts/contracts/rate-provider/XCQRRateProvider.sol/XCQRRateProvider.json");
+const contract = require("../../../../Projects/boot/xcqr-customswap/artifacts/contracts/rate-provider/XCQRRateProvider.sol/XCQRRateProvider.json");
 const hre = require("hardhat");
 
 // Provider
@@ -18,7 +18,7 @@ const signer = new hre.ethers.Wallet(PRIVATE_KEY, alchemyProvider);
 // Contract
 const rp = new hre.ethers.Contract(CONTRACT_ADDRESS, contract.abi, signer);
 
-async function main() {
+async function setRate1() {
 
     const decimals = hre.ethers.BigNumber.from(10).pow(18);
 
@@ -43,7 +43,7 @@ async function main() {
 
 }
 
-main()
+setRate1()
     .then(() => process.exit(0))
     .catch((error) => {
         console.error(error);

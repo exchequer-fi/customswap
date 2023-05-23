@@ -1,8 +1,0 @@
-bender@nerf:~/boot/xcqr-customswap$ npx hardhat run scripts/deployRateProvider.ts --network sepolia
-Deploying contracts with the account: 0x5A4b513e4B6c8Edd2bFa4C591909B0B408055B88
-Account balance: 4336546040000000000
-Rate Provider address: 0x29773B469647a28dBfd9389Db5EFa72c016E7ecC
-bender@nerf:~/boot/xcqr-customswap$ npx hardhat run scripts/deployRateProvider.ts --network goerli
-Deploying contracts with the account: 0xd713Eef55104c67cA1A6a1dB617FaeE1831cF5e3
-Account balance: 13154043072829034268
-Rate Provider address: 0x79Fbf87F147f11f6C4433499D3d23A9c96cEb345

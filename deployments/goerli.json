@@ -1,6 +1,8 @@
 {
   "goerli": {
-    "weth": "0xdFCeA9088c8A88A76FF74892C1457C17dfeef9C1"
+    "weth": "0xdFCeA9088c8A88A76FF74892C1457C17dfeef9C1",
+    "DAI": "0x11fE4B6AE13d2a6055C8D9cF65c55bac32B5d844",
+    "USDC": "0xD87Ba7A50B2E7E660f678A895E4B72E7CB4CCd9C"
   },
   "balancer": {
     "authorizer": {
@@ -26,6 +28,10 @@
     "ComposableCustomPoolFactory": {
       "20230511": "0xD7aECE617B04e6541A9B4CAFaf9a57F73538A62d",
       "20230511-verify": "yarn hardhat verify --network goerli 0xD7aECE617B04e6541A9B4CAFaf9a57F73538A62d '0xBA12222222228d8Ba445958a75a0704d566BF2C8' '0x0F3e0c4218b7b0108a3643cFe9D3ec0d4F57c54e' --libraries ./deployments/libraries.js"
+    },
+    "TestToken": {
+      "20230411": "0x9F205c61DA8eE3be4805B15b003b4732603f3631",
+      "20230411-verify": "yarn hardhat verify --network goerli 0x9F205c61DA8eE3be4805B15b003b4732603f3631 'Exchequer Test Token' 'XCR' 18"
     }
   }
 }

@@ -2,7 +2,7 @@ import {ethers} from "hardhat";
 import {Contract} from "ethers";
 import {fp} from "../test/helpers/numbers";
 
-import {ComposableCustomPoolFactory} from "../typechain-types/ComposableCustomPoolFactory";
+import {ComposableCustomPoolFactory} from "../../../Projects/boot/xcqr-customswap/typechain-types/ComposableCustomPoolFactory";
 
 const SECOND = 1;
 const MINUTE = SECOND * 60;
