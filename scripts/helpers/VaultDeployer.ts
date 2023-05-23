@@ -2,6 +2,8 @@ import {ethers} from "hardhat";
 import {TokenDeployer} from "./TokenDeployer";
 import {scaleDn} from "./biggy";
 
+import {Vault} from "../../typechain-types/vault/Vault";
+
 export class VaultDeployer {
 
     public static readonly SECOND = 1;
@@ -14,6 +16,8 @@ export class VaultDeployer {
 
     private readonly pauseWindowDuration = 3 * VaultDeployer.MONTH;
     private readonly bufferPeriodDuration = VaultDeployer.MONTH;
+
+    private vault: Vault | undefined;
 
     private async deployAuthorizer(from: string) {
         const factory = await ethers.getContractFactory("TimelockAuthorizer");
@@ -37,25 +41,23 @@ export class VaultDeployer {
     public async deployVault(admin: string, wethAddress: string) {
         const authorizer = await this.deployAuthorizer(admin);
         const factory = await ethers.getContractFactory("Vault");
-        const contract = await factory.deploy(
+        this.vault = await factory.deploy(
             authorizer.address,
             wethAddress,
             this.pauseWindowDuration,
             this.bufferPeriodDuration
         );
-
-        return contract.deployed();
+        return this;
     }
 
-    public async getTokens(vaultAddress: string, poolId: string) {
-        // console.log("tokens");
-        const vault = await this.attachVault(vaultAddress);
-        const pd = new TokenDeployer();
+    public async getAddress() {
+        const vault = this.vault!;
+        return await vault.address;
+    }
+
+    public async getTokens(poolId: string) {
+        const vault = this.vault!;
         const {tokens: tokens} = await vault.getPoolTokens(poolId);
-        for (let i = 0; i < tokens.length; i++) {
-            let t = await pd.attachToken(tokens[i]);
-            // console.log(await t.symbol(), t.address, await t.decimals());
-        }
         return tokens;
     }
 
@@ -63,7 +65,7 @@ export class VaultDeployer {
         console.log("VAULT TOKENS:", poolId);
         const vault = await this.attachVault(vaultAddress);
         const pd = new TokenDeployer();
-        const {tokens: tokens, balances, lastChangeBlock} = await vault.getPoolTokens(poolId);
+        const {tokens: tokens, balances, } = await vault.getPoolTokens(poolId);
         for (let i = 0; i < tokens.length; i++) {
             const t = await pd.attachToken(tokens[i]);
             const s = await t.symbol();

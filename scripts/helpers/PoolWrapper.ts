@@ -32,6 +32,11 @@ export class PoolWrapper {
         this.customMath = customMath;
     }
 
+    public async poolId() {
+        const p = this.pool!;
+        return p.getPoolId();
+    }
+
     public async connect(address: string) {
         const factory = await ethers.getContractFactory("ComposableCustomPool", {
                 libraries: {
