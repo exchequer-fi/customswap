@@ -17,9 +17,7 @@ pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
 import "../interfaces/vault/IVault.sol";
-import "../pool-custom/CustomPoolAmplification.sol";
-
-//import "@balancer-labs/v2-interfaces/contracts/vault/IVault.sol";
+import "../CustomPoolAmplification.sol";
 
 contract MockCustomPoolAmplification is CustomPoolAmplification {
     IVault private immutable _vault;

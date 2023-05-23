@@ -15,9 +15,7 @@
 pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
-import "../pool-custom/ComposableCustomPoolProtocolFees.sol";
-//import "@balancer-labs/v2-solidity-utils/contracts/helpers/ERC20Helpers.sol";
-
+import "../ComposableCustomPoolProtocolFees.sol";
 
 contract MockComposableCustomPoolProtocolFees is ComposableCustomPoolProtocolFees {
     constructor(

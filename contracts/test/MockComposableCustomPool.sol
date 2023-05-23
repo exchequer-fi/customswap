@@ -16,8 +16,8 @@ pragma solidity ^0.7.0;
 
 pragma experimental ABIEncoderV2;
 
-import "../pool-custom/ComposableCustomPool.sol";
 import "../pool-utils/test/MockFailureModes.sol";
+import "../ComposableCustomPool.sol";
 
 // import "@balancer-labs/v2-pool-utils/contracts/test/MockFailureModes.sol";
 

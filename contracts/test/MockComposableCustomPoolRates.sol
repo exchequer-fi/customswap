@@ -14,11 +14,7 @@
 
 pragma solidity ^0.7.0;
 
-import "../pool-custom/ComposableCustomPoolRates.sol";
-
-// import "@balancer-labs/v2-solidity-utils/contracts/helpers/ERC20Helpers.sol";
-// import "../ComposableCustomPoolRates.sol";
-
+import "../ComposableCustomPoolRates.sol";
 
 contract MockComposableCustomPoolRates is ComposableCustomPoolRates {
     constructor(

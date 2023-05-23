@@ -15,8 +15,7 @@
 pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
-import "../pool-custom/CustomMath.sol";
-
+import "../CustomMath.sol";
 
 contract MockCustomMath {
 

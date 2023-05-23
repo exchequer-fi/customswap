@@ -14,11 +14,9 @@
 
 pragma solidity ^0.7.0;
 
-
-import "../solidity-utils/helpers/ERC20Helpers.sol";
-
+import "./solidity-utils/helpers/ERC20Helpers.sol";
+import "./pool-utils/rates/PriceRateCache.sol";
 import "./ComposableCustomPoolStorage.sol";
-import "../pool-utils/rates/PriceRateCache.sol";
 
 //import "@balancer-labs/v2-interfaces/contracts/solidity-utils/openzeppelin/IERC20.sol";
 //import "@balancer-labs/v2-interfaces/contracts/pool-utils/IRateProvider.sol";
@@ -126,14 +124,14 @@ abstract contract ComposableCustomPoolRates is ComposableCustomPoolStorage {
      * provider.
      */
     function getTokenRateCache(IERC20 token)
-        external
-        view
-        returns (
-            uint256 rate,
-            uint256 oldRate,
-            uint256 duration,
-            uint256 expires
-        )
+    external
+    view
+    returns (
+        uint256 rate,
+        uint256 oldRate,
+        uint256 duration,
+        uint256 expires
+    )
     {
         bytes32 cache = _tokenRateCaches[_getTokenIndex(token)];
 
@@ -233,9 +231,9 @@ abstract contract ComposableCustomPoolRates is ComposableCustomPoolStorage {
      * The `balances` array is assumed to not include BPT to ensure that token indices align.
      */
     function _getAdjustedBalances(uint256[] memory balances, bool ignoreExemptFlags)
-        internal
-        view
-        returns (uint256[] memory)
+    internal
+    view
+    returns (uint256[] memory)
     {
         uint256 totalTokensWithoutBpt = balances.length;
         uint256[] memory adjustedBalances = new uint256[](totalTokensWithoutBpt);
@@ -243,7 +241,7 @@ abstract contract ComposableCustomPoolRates is ComposableCustomPoolStorage {
         for (uint256 i = 0; i < totalTokensWithoutBpt; ++i) {
             uint256 skipBptIndex = i >= getBptIndex() ? i + 1 : i;
             adjustedBalances[i] = _isTokenExemptFromYieldProtocolFee(skipBptIndex) ||
-                (ignoreExemptFlags && _hasRateProvider(skipBptIndex))
+            (ignoreExemptFlags && _hasRateProvider(skipBptIndex))
                 ? _adjustedBalance(balances[i], _tokenRateCaches[skipBptIndex])
                 : balances[i];
         }

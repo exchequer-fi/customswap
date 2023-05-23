@@ -15,14 +15,8 @@
 pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
-//import "./interfaces/solidity-utils/helpers/BalancerErrors.sol";
-//import "./interfaces/solidity-utils/openzeppelin/IERC20.sol";
-//import "./interfaces/pool-utils/IRateProvider.sol";
-//
-//import "./pool-utils/BasePool.sol";
-
-import "../interfaces/pool-utils/IRateProvider.sol";
-import "../pool-utils/BasePool.sol";
+import "./interfaces/pool-utils/IRateProvider.sol";
+import "./pool-utils/BasePool.sol";
 import "./CustomMath.sol";
 
 abstract contract ComposableCustomPoolStorage is BasePool {

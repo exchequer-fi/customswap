@@ -15,8 +15,8 @@
 pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
-import "../pool-utils/ProtocolFeeCache.sol";
-import "../pool-utils/InvariantGrowthProtocolSwapFees.sol";
+import "./pool-utils/ProtocolFeeCache.sol";
+import "./pool-utils/InvariantGrowthProtocolSwapFees.sol";
 import "./ComposableCustomPoolStorage.sol";
 import "./ComposableCustomPoolRates.sol";
 import "./CustomMath.sol";

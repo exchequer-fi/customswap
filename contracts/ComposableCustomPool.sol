@@ -32,8 +32,8 @@ pragma experimental ABIEncoderV2;
 //import "./interfaces/standalone-utils/IProtocolFeePercentagesProvider.sol";
 //import "./pool-utils/BaseGeneralPool.sol";
 
-import "../interfaces/pool-custom/CustomPoolUserData.sol";
-import "../pool-utils/BaseGeneralPool.sol";
+import "./interfaces/pool-custom/CustomPoolUserData.sol";
+import "./pool-utils/BaseGeneralPool.sol";
 
 import "./ComposableCustomPoolStorage.sol";
 import "./ComposableCustomPoolRates.sol";

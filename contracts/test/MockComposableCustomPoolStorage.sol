@@ -16,7 +16,7 @@ pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
 import "../solidity-utils//helpers/ERC20Helpers.sol";
-import "../pool-custom/ComposableCustomPoolStorage.sol";
+import "../ComposableCustomPoolStorage.sol";
 
 contract MockComposableCustomPoolStorage is ComposableCustomPoolStorage {
     constructor(

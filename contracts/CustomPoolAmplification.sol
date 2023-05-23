@@ -15,12 +15,9 @@
 pragma solidity ^0.7.0;
 pragma experimental ABIEncoderV2;
 
-//import "./pool-utils/BasePoolAuthorization.sol";
-//import "./solidity-utils/helpers/WordCodec.sol";
-
+import "./pool-utils/BasePoolAuthorization.sol";
+import "./solidity-utils/helpers/WordCodec.sol";
 import "./CustomMath.sol";
-import "../pool-utils/BasePoolAuthorization.sol";
-import "../solidity-utils/helpers/WordCodec.sol";
 // import "hardhat/console.sol";
 
 abstract contract CustomPoolAmplification is BasePoolAuthorization {

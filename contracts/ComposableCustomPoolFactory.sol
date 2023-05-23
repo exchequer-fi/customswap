@@ -19,8 +19,8 @@ pragma experimental ABIEncoderV2;
 //import "@balancer-labs/v2-pool-utils/contracts/factories/BasePoolFactory.sol";
 //import "@balancer-labs/v2-pool-utils/contracts/factories/FactoryWidePauseWindow.sol";
 
-import "../pool-utils/factories/BasePoolFactory.sol";
-import "../pool-utils/factories/FactoryWidePauseWindow.sol";
+import "./pool-utils/factories/BasePoolFactory.sol";
+import "./pool-utils/factories/FactoryWidePauseWindow.sol";
 import "./ComposableCustomPool.sol";
 
 contract ComposableCustomPoolFactory is BasePoolFactory, FactoryWidePauseWindow {
