@@ -52,6 +52,17 @@ const config: HardhatUserConfig = {
             },
         }
     },
+    networks: {
+        localhost: {
+            url: "http://127.0.0.1:8545"
+        },
+        hardhat: {
+            chainId: 1337 // We set 1337 to make interacting with MetaMask simpler
+        }
+    },
+    etherscan: {
+        apiKey: ETHERSCAN_API_KEY
+    },
     contractSizer: {
         alphaSort: true,
         disambiguatePaths: false,
