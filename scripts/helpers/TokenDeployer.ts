@@ -1,25 +1,22 @@
 import {ethers} from "hardhat";
-import {scaleDn, scaleUp} from "./biggy";
+import {scaleDn} from "./biggy";
 import {BigNumber, Signer} from "ethers";
 
 export class TokenDeployer {
 
     public async deployToken(desc: string, symbol: string, decimal: number) {
         const factory = await ethers.getContractFactory("TestToken");
-        const contract = await factory.deploy(desc, symbol, decimal);
-        return contract.deployed();
+        return factory.deploy(desc, symbol, decimal);
     }
 
     public async attachToken(address: string) {
         const factory = await ethers.getContractFactory("TestToken");
-        const token = await factory.attach(address);
-        return token.deployed();
+        return factory.attach(address);
     }
 
     public async deployWETH() {
         const factory = await ethers.getContractFactory("TestWETH");
-        const contract = await factory.deploy();
-        return contract.deployed();
+        return factory.deploy();
     }
 
     public async printTokens(tokens: string[], address: string) {

@@ -21,21 +21,17 @@ export class VaultDeployer {
 
     private async deployAuthorizer(from: string) {
         const factory = await ethers.getContractFactory("TimelockAuthorizer");
-        const contract = await factory.deploy(from, VaultDeployer.ZERO_ADDRESS, VaultDeployer.MONTH);
-        // console.log("TimelockAuthorizer address:", contract.address);
-        return contract.deployed();
+        return factory.deploy(from, VaultDeployer.ZERO_ADDRESS, VaultDeployer.MONTH);
     }
 
     public async attachAuthorizer(address: string) {
         const factory = await ethers.getContractFactory("TimelockAuthorizer");
-        const contract = await factory.attach(address);
-        return contract.deployed();
+        return factory.attach(address);
     }
 
     public async attachVault(address: string) {
         const factory = await ethers.getContractFactory("Vault");
-        const contract = await factory.attach(address);
-        return contract.deployed();
+        return factory.attach(address);
     }
 
     public async deployVault(admin: string, wethAddress: string) {
@@ -65,7 +61,7 @@ export class VaultDeployer {
         console.log("VAULT TOKENS:", poolId);
         const vault = await this.attachVault(vaultAddress);
         const pd = new TokenDeployer();
-        const {tokens: tokens, balances, } = await vault.getPoolTokens(poolId);
+        const {tokens: tokens, balances,} = await vault.getPoolTokens(poolId);
         for (let i = 0; i < tokens.length; i++) {
             const t = await pd.attachToken(tokens[i]);
             const s = await t.symbol();

@@ -1,5 +1,7 @@
 import {defaultAbiCoder} from "@ethersproject/abi";
 import {BigNumber, Signer} from "ethers";
+import {inReceipt} from "../../test/helpers/test/expectEvent";
+
 
 import {IVault} from "../../typechain-types/vault/Vault";
 import {TokenDeployer} from "./TokenDeployer";
@@ -19,6 +21,11 @@ export enum JoinKind {
 export enum ExitKind {
     EXACT_BPT_IN_FOR_ONE_TOKEN_OUT = 0,
     BPT_IN_FOR_EXACT_TOKENS_OUT
+}
+
+enum SwapKind {
+    GivenIn = 0,
+    GivenOut = 1
 }
 
 export class PoolWrapper {
@@ -76,7 +83,6 @@ export class PoolWrapper {
         }
     }
 
-
     public async grantPermission(action: string, address: string) {
         const pool = this.pool!;
         const selector = pool.interface.getSighash(action);
@@ -89,7 +95,6 @@ export class PoolWrapper {
 
     public async init(tokens: string[], signer: Signer) {
 
-        console.log("init pool");
         const pool = this.pool!;
         const poolId = await pool.getPoolId();
         const vault = await new VaultDeployer().attachVault(await pool.getVault());
@@ -103,14 +108,14 @@ export class PoolWrapper {
             let s = await t.symbol();
             switch (s) {
                 case "USDC": {
-                    let b = scaleUp(3, d);
+                    let b = scaleUp(3000, d);
                     amounts.push(b);
                     limits.push(b);
                     await td.approveTransfer(tokens[i], signer, vault.address, b);
                     break;
                 }
                 case "XCHR": {
-                    let b = scaleUp(1, d);
+                    let b = scaleUp(1000, d);
                     amounts.push(b);
                     limits.push(b);
                     await td.approveTransfer(tokens[i], signer, vault.address, b);
@@ -138,8 +143,6 @@ export class PoolWrapper {
 
     public async joinExactTokensIn(tokens: string[], signer: Signer) {
 
-        console.log("join pool with exact tokens");
-
         const pool = this.pool!
         const poolId = await pool.getPoolId();
         const vault = await new VaultDeployer().attachVault(await pool.getVault());
@@ -153,14 +156,14 @@ export class PoolWrapper {
             let s = await t.symbol();
             switch (s) {
                 case "USDC": {
-                    let b = scaleUp(3, d);
+                    let b = scaleUp(90, d);
                     amounts.push(b);
                     limits.push(b);
                     await td.approveTransfer(tokens[i], signer, vault.address, b);
                     break;
                 }
                 case "XCHR": {
-                    let b = scaleUp(1, d);
+                    let b = scaleUp(30, d);
                     amounts.push(b);
                     limits.push(b);
                     await td.approveTransfer(tokens[i], signer, vault.address, b);
@@ -206,7 +209,7 @@ export class PoolWrapper {
             let s = await t.symbol();
             switch (s) {
                 case "USDC": {
-                    let b = scaleUp(3, d);
+                    let b = scaleUp(30, d);
                     limits.push(b);
                     await td.approveTransfer(tokens[i], signer, vault.address, b);
                     joinTokenIndex = tokenCounter;
@@ -214,7 +217,7 @@ export class PoolWrapper {
                     break;
                 }
                 case "XCHR": {
-                    let b = scaleUp(1, d);
+                    let b = scaleUp(10, d);
                     limits.push(b);
                     await td.approveTransfer(tokens[i], signer, vault.address, b);
                     tokenCounter++;
@@ -226,7 +229,7 @@ export class PoolWrapper {
             }
         }
 
-        const bptOut = scaleUp(2, 18);
+        const bptOut = scaleUp(20, 18);
 
         let request: IVault.JoinPoolRequestStruct = {
             assets: tokens,
@@ -319,7 +322,7 @@ export class PoolWrapper {
             }
         }
 
-        const bptIn = scaleUp(2, 18);
+        const bptIn = scaleUp(20, 18);
 
         let request: IVault.ExitPoolRequestStruct = {
             assets: tokens,
@@ -335,6 +338,96 @@ export class PoolWrapper {
         const sa = await signer.getAddress();
         let tx = await vault.connect(signer).exitPool(poolId, sa, sa, request);
         await tx.wait();
+    }
+
+    public async swapGivenOut(usdc: string, xhqr: string, signer: Signer) {
+
+        const pool = this.pool!;
+        const poolId = await pool.getPoolId();
+        const vault = await new VaultDeployer().attachVault(await pool.getVault());
+        const td = new TokenDeployer();
+        const sa = await signer.getAddress();
+
+        const amountOut = scaleUp(10, 18);
+
+        const maxAmountIn = PoolWrapper.MAX_UINT256;
+
+        await td.approveTransfer(usdc, signer, vault.address, maxAmountIn);
+
+        const singleSwap: IVault.SingleSwapStruct = {
+            poolId: poolId,
+            kind: SwapKind.GivenOut,
+            assetIn: usdc,
+            assetOut: xhqr,
+            amount: amountOut,
+            userData: '0x'
+        };
+
+        const funds: IVault.FundManagementStruct = {
+            sender: sa,
+            recipient: sa,
+            fromInternalBalance: false,
+            toInternalBalance: false
+        };
+
+        const deadline: BigNumber = PoolWrapper.MAX_UINT256;
+
+        const tx = await vault.connect(signer).swap(
+            singleSwap,
+            funds,
+            maxAmountIn,
+            deadline
+        );
+
+        const receipt = await tx.wait();
+
+    }
+
+    public async swapGivenIn(usdc: string, xhqr: string, signer: Signer) {
+
+        const pool = this.pool!;
+        const poolId = await pool.getPoolId();
+        const vault = await new VaultDeployer().attachVault(await pool.getVault());
+        const td = new TokenDeployer();
+        const sa = await signer.getAddress();
+
+        const amountIn = scaleUp(10, 18);
+
+        const minAmountOut = 0;
+
+        await td.approveTransfer(xhqr, signer, vault.address, amountIn);
+
+        const singleSwap: IVault.SingleSwapStruct = {
+            poolId: poolId,
+            kind: SwapKind.GivenIn,
+            assetIn: xhqr,
+            assetOut: usdc,
+            amount: amountIn,
+            userData: '0x'
+        };
+
+        const funds: IVault.FundManagementStruct = {
+            sender: sa,
+            recipient: sa,
+            fromInternalBalance: false,
+            toInternalBalance: false
+        };
+
+        const deadline: BigNumber = PoolWrapper.MAX_UINT256;
+
+        const tx = await vault.connect(signer).swap(
+            singleSwap,
+            funds,
+            minAmountOut,
+            deadline
+        );
+
+        const receipt = await tx.wait();
+
+        //const args = inReceipt(receipt, 'Swap').args;
+
+        //console.log(args);
+
     }
 
 

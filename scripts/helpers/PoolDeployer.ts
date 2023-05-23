@@ -27,18 +27,16 @@ export class PoolDeployer {
 
     private async deployProtocolFeeProvider(vault: string) {
         const factory = await ethers.getContractFactory("ProtocolFeePercentagesProvider");
-        const contract = await factory.deploy(
+        return await factory.deploy(
             vault,
             this.maxYieldValue,
             this.maxAUMValue
         );
-        return contract.deployed();
     }
 
     private async deployRateProvider() {
         const factory = await ethers.getContractFactory("CustomPoolRateProvider");
-        const contract = await factory.deploy();
-        return contract.deployed();
+        return await factory.deploy();
     }
 
     private async attachCustomSwapFactory(address: string) {
@@ -47,8 +45,7 @@ export class PoolDeployer {
                 CustomMath: this.customMath
             }
         });
-        const contract = await factory.attach(address);
-        return contract.deployed();
+        return factory.attach(address);
     }
 
     private async deployCustomSwapFactory(vaultAddress: string) {
@@ -58,8 +55,7 @@ export class PoolDeployer {
             }
         });
         const protocolFeeProvider = await this.deployProtocolFeeProvider(vaultAddress);
-        const contract = await factory.deploy(vaultAddress, protocolFeeProvider.address);
-        return contract.deployed();
+        return await factory.deploy(vaultAddress, protocolFeeProvider.address);
     }
 
     private getCreatedPoolId(receipt: ContractReceipt) {
@@ -80,8 +76,7 @@ export class PoolDeployer {
                 }
             }
         );
-        const contract = await factory.attach(address);
-        return contract.deployed();
+        return factory.attach(address);
     }
 
     public async deployPool(vaultAddress: string, tokens: string[], admin: string) {
