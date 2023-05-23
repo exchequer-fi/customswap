@@ -5,7 +5,7 @@ const API_URL = `https://eth-goerli.g.alchemy.com/v2/${API_KEY}`;
 const PRIVATE_KEY = process.env.GOERLI_PK;
 const CONTRACT_ADDRESS = `0x5C19e84230344518dFB1F38e6D8002F77E730C9d`;
 
-const contract = require("../artifacts/contracts/XCQRRateProvider.sol/XCQRRateProvider.json");
+const contract = require("../artifacts/contracts/rate-provider/XCQRRateProvider.sol/XCQRRateProvider.json");
 const hre = require("hardhat");
 
 //console.log(JSON.stringify(contract.abi));
