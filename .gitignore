@@ -10,7 +10,4 @@ cache
 artifacts
 .idea
 
-
-README.md
-deploy-and-verify.txt
-hardhat.config.js.orig
+deploymnts/XCQRRateProvider-1.txt

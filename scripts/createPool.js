@@ -7,7 +7,7 @@ const PRIVATE_KEY = process.env.GOERLI_PK;
 const RATE_PROVIDER_ADDRESS = `0x5C19e84230344518dFB1F38e6D8002F77E730C9d`;
 const FACTORY_ADDRESS = `0xe73E7497397141e7be019d08b0f47Ae7eDD3BB2f`;
 
-const contract = require("../artifacts/contracts/pool-custom/ComposableCustomPoolFactory.sol/ComposableCustomPoolFactory.json");
+const contract = require("../artifacts/contracts/ComposableCustomPoolFactory.sol/ComposableCustomPoolFactory.json");
 
 // Provider
 const provider = new hre.ethers.providers.AlchemyProvider(network = "goerli", API_KEY);

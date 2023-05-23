@@ -1,17 +1,16 @@
-require('dotenv').config();
+import dotenv from "dotenv";
 
-const API_KEY = process.env.ALCHEMY_API_KEY;
-const API_URL = `https://eth-goerli.g.alchemy.com/v2/${API_KEY}`;
-const PRIVATE_KEY = process.env.GOERLI_PK;
-const CONTRACT_ADDRESS = `0x5C19e84230344518dFB1F38e6D8002F77E730C9d`;
+dotenv.config();
+
+const API_KEY: string = process.env.INFURA_API_KEY!;
+const PRIVATE_KEY: string = process.env.GOERLI_PRIVATE_KEY!;
+const CONTRACT_ADDRESS: string = '0x5C19e84230344518dFB1F38e6D8002F77E730C9d';
 
 const contract = require("../artifacts/contracts/rate-provider/XCQRRateProvider.sol/XCQRRateProvider.json");
 const hre = require("hardhat");
 
-//console.log(JSON.stringify(contract.abi));
-
 // Provider
-const alchemyProvider = new hre.ethers.providers.AlchemyProvider(network = "goerli", API_KEY);
+const alchemyProvider = new hre.ethers.providers.InfuraProvider("goerli", API_KEY);
 
 // Signer
 const signer = new hre.ethers.Wallet(PRIVATE_KEY, alchemyProvider);
@@ -20,6 +19,7 @@ const signer = new hre.ethers.Wallet(PRIVATE_KEY, alchemyProvider);
 const rp = new hre.ethers.Contract(CONTRACT_ADDRESS, contract.abi, signer);
 
 async function main() {
+
     const decimals = hre.ethers.BigNumber.from(10).pow(18);
 
     let r = await rp.getRate();

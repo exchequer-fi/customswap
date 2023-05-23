@@ -1,0 +1,20 @@
+bender@nerf:~/boot/xcqr-customswap$ npx hardhat run scripts/deploy.js --network goerli
+Deploying the contracts with the account: 0xd713Eef55104c67cA1A6a1dB617FaeE1831cF5e3
+Account balance: 7591425210718575476
+RateProvider address: 0x5C19e84230344518dFB1F38e6D8002F77E730C9d
+
+---
+
+bender@nerf:~/boot/xcqr-customswap$ npx hardhat verify --network goerli 0x5C19e84230344518dFB1F38e6D8002F77E730C9d
+Nothing to compile
+Successfully submitted source code for contract
+contracts/XCQRRateProvider.sol:XCQRRateProvider at 0x5C19e84230344518dFB1F38e6D8002F77E730C9d
+for verification on the block explorer. Waiting for verification result...
+
+Successfully verified contract XCQRRateProvider on Etherscan.
+https://goerli.etherscan.io/address/0x5C19e84230344518dFB1F38e6D8002F77E730C9d#code
+
+
+https://goerli.etherscan.io/address/0x5C19e84230344518dFB1F38e6D8002F77E730C9d
+
+npx hardhat verify --contract contracts/rate-provider/XCQRRateProvider.sol 0x5C19e84230344518dFB1F38e6D8002F77E730C9d --network goerli
