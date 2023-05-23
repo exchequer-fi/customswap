@@ -2,7 +2,7 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
-const API_KEY: string = process.env.INFURA_API_KEY!;
+const API_KEY: string = process.env.GOERLI_API_KEY!;
 const PRIVATE_KEY: string = process.env.GOERLI_PRIVATE_KEY!;
 const CONTRACT_ADDRESS: string = '0x5C19e84230344518dFB1F38e6D8002F77E730C9d';
 
@@ -10,7 +10,7 @@ const contract = require("../artifacts/contracts/rate-provider/XCQRRateProvider.
 const hre = require("hardhat");
 
 // Provider
-const alchemyProvider = new hre.ethers.providers.InfuraProvider("goerli", API_KEY);
+const alchemyProvider = new hre.ethers.providers.AlchemyProvider("goerli", API_KEY);
 
 // Signer
 const signer = new hre.ethers.Wallet(PRIVATE_KEY, alchemyProvider);
@@ -32,6 +32,9 @@ async function main() {
     } else {
         newRate = hre.ethers.BigNumber.from(1).mul(decimals);
     }
+    const estimatedGas = await rp.estimateGas.setRate(newRate);
+    console.log("estimatedGas " + estimatedGas);
+
     const tx = await rp.setRate(newRate);
     await tx.wait();
 

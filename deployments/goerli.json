@@ -1,0 +1,31 @@
+{
+  "goerli": {
+    "weth": "0xdFCeA9088c8A88A76FF74892C1457C17dfeef9C1"
+  },
+  "balancer": {
+    "authorizer": {
+      "20210418": "0xA331D84eC860Bf466b4CdCcFb4aC09a1B43F3aE6"
+    },
+    "vault": {
+      "20210418": "0xBA12222222228d8Ba445958a75a0704d566BF2C8"
+    },
+    "balancerHelpers": {
+      "20210418": "0x5aDDCCa35b7A0D07C74063c48700C8590E87864E"
+    },
+    "protocolFeePercentagesProvider": {
+      "20220725": "0x0F3e0c4218b7b0108a3643cFe9D3ec0d4F57c54e"
+    }
+  },
+  "XCQR": {
+    "customMath": {
+      "20230511": "0xCc3650F13Aa626222e41101a6C9Aac31554E481E"
+    },
+    "rateProvider": {
+      "20230411": "0x5C19e84230344518dFB1F38e6D8002F77E730C9d"
+    },
+    "ComposableCustomPoolFactory": {
+      "20230511": "0xD7aECE617B04e6541A9B4CAFaf9a57F73538A62d",
+      "20230511-verify": "yarn hardhat verify --network goerli 0xD7aECE617B04e6541A9B4CAFaf9a57F73538A62d '0xBA12222222228d8Ba445958a75a0704d566BF2C8' '0x0F3e0c4218b7b0108a3643cFe9D3ec0d4F57c54e' --libraries ./deployments/libraries.js"
+    }
+  }
+}

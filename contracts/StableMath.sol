@@ -1,15 +1,15 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // This program is free software: you can redistribute it and/or modify
-// it under the terms of the GNU General Public License as published by
+// it under the terms of the GNU General internal License as published by
 // the Free Software Foundation, either version 3 of the License, or
 // (at your option) any later version.
 
 // This program is distributed in the hope that it will be useful,
 // but WITHOUT ANY WARRANTY; without even the implied warranty of
 // MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-// GNU General Public License for more details.
+// GNU General internal License for more details.
 
-// You should have received a copy of the GNU General Public License
+// You should have received a copy of the GNU General internal License
 // along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 pragma solidity ^0.7.0;
@@ -25,7 +25,7 @@ import "./solidity-utils/math/Math.sol";
 library StableMath {
     using FixedPoint for uint256;
 
-    uint256 public constant _AMP_PRECISION = 1e3;
+    uint256 internal constant _AMP_PRECISION = 1e3;
 
     // Note on unchecked arithmetic:
     // This contract performs a large number of additions, subtractions, multiplications and divisions, often inside
@@ -51,7 +51,7 @@ library StableMath {
     // See: https://github.com/curvefi/curve-contract/blob/b0bbf77f8f93c9c5f4e415bce9cd71f0cdee960e/contracts/pool-templates/base/SwapTemplateBase.vy#L206
     // solhint-disable-previous-line max-line-length
     function __calculateInvariant(uint256 amplificationParameter, uint256[] memory balances)
-    public
+    internal
     pure
     returns (uint256)
     {
@@ -117,6 +117,7 @@ library StableMath {
         }
 
         _revert(Errors.STABLE_INVARIANT_DIDNT_CONVERGE);
+        return 0;
     }
     // This function calculates the balance of a given token (tokenIndex)
     // given all the other balances and the invariant
@@ -125,7 +126,7 @@ library StableMath {
         uint256[] memory balances,
         uint256 invariant,
         uint256 tokenIndex
-    ) public pure returns (uint256) {
+    ) internal pure returns (uint256) {
         // Rounds result up overall
 
         uint256 ampTimesTotal = amplificationParameter * balances.length;
@@ -170,13 +171,14 @@ library StableMath {
         }
 
         _revert(Errors.STABLE_GET_BALANCE_DIDNT_CONVERGE);
+        return 0;
     }
 
     function __getRate(
         uint256[] memory balances,
         uint256 amp,
         uint256 supply
-    ) public pure returns (uint256) {
+    ) internal pure returns (uint256) {
         // When calculating the current BPT rate, we may not have paid the protocol fees, therefore
         // the invariant should be smaller than its current value. Then, we round down overall.
         uint256 invariant = __calculateInvariant(amp, balances);
@@ -194,7 +196,7 @@ library StableMath {
         uint256 tokenIndexOut,
         uint256 tokenAmountIn,
         uint256 invariant
-    ) public pure returns (uint256) {
+    ) internal pure returns (uint256) {
         /**************************************************************************************************************
         // outGivenIn token x for y - polynomial equation to solve                                                   //
         // ay = amount out to calculate                                                                              //
@@ -234,7 +236,7 @@ library StableMath {
         uint256 tokenIndexOut,
         uint256 tokenAmountOut,
         uint256 invariant
-    ) public pure returns (uint256) {
+    ) internal pure returns (uint256) {
         /**************************************************************************************************************
         // inGivenOut token x for y - polynomial equation to solve                                                   //
         // ax = amount in to calculate                                                                               //
@@ -273,7 +275,7 @@ library StableMath {
         uint256 bptTotalSupply,
         uint256 currentInvariant,
         uint256 swapFeePercentage
-    ) public pure returns (uint256) {
+    ) internal pure returns (uint256) {
         // BPT out, so we round down overall.
 
         // First loop calculates the sum of all token balances, which will be used to calculate
@@ -330,7 +332,7 @@ library StableMath {
         uint256 bptTotalSupply,
         uint256 currentInvariant,
         uint256 swapFeePercentage
-    ) public pure returns (uint256) {
+    ) internal pure returns (uint256) {
         // Token in, so we round up overall.
 
         uint256 newInvariant = bptTotalSupply.add(bptAmountOut).divUp(bptTotalSupply).mulUp(currentInvariant);
@@ -376,7 +378,7 @@ library StableMath {
         uint256 bptTotalSupply,
         uint256 currentInvariant,
         uint256 swapFeePercentage
-    ) public pure returns (uint256) {
+    ) internal pure returns (uint256) {
         // BPT in, so we round up overall.
 
         // First loop calculates the sum of all token balances, which will be used to calculate
@@ -430,7 +432,7 @@ library StableMath {
         uint256 bptTotalSupply,
         uint256 currentInvariant,
         uint256 swapFeePercentage
-    ) public pure returns (uint256) {
+    ) internal pure returns (uint256) {
         // Token out, so we round down overall.
 
         uint256 newInvariant = bptTotalSupply.sub(bptAmountIn).divUp(bptTotalSupply).mulUp(currentInvariant);

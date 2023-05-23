@@ -13,7 +13,6 @@ const MONTH = DAY * 30;
 
 const ZERO_ADDRESS = '0x0000000000000000000000000000000000000000';
 
-
 async function deployToken() {
     const factory = await ethers.getContractFactory("TestToken");
     const contract = await factory.deploy("Wrapped ETH", "WETH", 18);
@@ -72,22 +71,8 @@ async function deployProtocolFeeProvider(vault: Contract) {
     return contract.deployed();
 }
 
-async function deployStableMath() {
-    const factory = await ethers.getContractFactory("StableMath");
-    const contract = await factory.deploy();
-    console.log("StableMathLib address:", contract.address);
-    return contract.deployed();
-}
-
-async function deployCustomMath(stableMathLib: Contract) {
-    const factory = await ethers.getContractFactory(
-        "CustomMath",
-        {
-            libraries: {
-                StableMath: stableMathLib.address
-            }
-        }
-    );
+async function deployCustomMath() {
+    const factory = await ethers.getContractFactory("CustomMath");
     const contract = await factory.deploy();
     console.log("CustomMathLib address:", contract.address);
     return contract.deployed();
@@ -114,7 +99,7 @@ async function deployCustomSwapFactory(from: string, customMathLib: Contract) {
 
 async function deployPool(factory: ComposableCustomPoolFactory) {
 
-   // const pool = factory.create();
+    // const pool = factory.create();
 
 }
 
@@ -123,8 +108,7 @@ async function main() {
     console.log("Deploying contracts with the account:", deployer.address);
     console.log("Account balance:", (await deployer.getBalance()).toString());
 
-    const stableMathLib = await deployStableMath();
-    const customMathLib = await deployCustomMath(stableMathLib);
+    const customMathLib = await deployCustomMath();
     const customPoolFactory = await deployCustomSwapFactory(deployer.address, customMathLib);
 
     await deployPool(customPoolFactory);
