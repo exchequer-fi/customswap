@@ -13,15 +13,44 @@ const config: HardhatUserConfig = {
     solidity: {
         compilers: [
             {
+                version: '0.7.1',
+                settings: {
+                    optimizer: {
+                        enabled: true,
+                        runs: 9999
+                    }
+                }
+            }
+        ],
+        overrides: {
+            'contracts/ComposableCustomPool.sol': {
+                version: '0.7.1',
+                settings: {
+                    optimizer: {
+                        enabled: true,
+                        runs: 200,
+                    },
+                },
+            },
+            'contracts/MockComposableCustomPool.sol': {
                 version: "0.7.1",
                 settings: {
                     optimizer: {
                         enabled: true,
-                        runs: 200
-                    }
-                }
-            }
-        ]
+                        runs: 200,
+                    },
+                },
+            },
+            'contracts/vault/Vault.sol': {
+                version: "0.7.1",
+                settings: {
+                    optimizer: {
+                        enabled: true,
+                        runs: 500,
+                    },
+                },
+            },
+        }
     },
     contractSizer: {
         alphaSort: true,

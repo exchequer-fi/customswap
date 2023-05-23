@@ -9,3 +9,13 @@ typechain-types
 cache
 artifacts
 .idea
+
+
+contracts/Lock.sol
+README.md
+deploy-and-verify.txt
+hardhat.config.js.orig
+scripts/deploy.ts
+scripts/deploy.js
+test/Lock.ts
+tasks/faucet.js
