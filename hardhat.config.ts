@@ -11,8 +11,15 @@ import {hardhatNetworkConfig} from './config/hardhat.network';
 
 const config: HardhatUserConfig = {
     solidity: {
-        compilers: hardhatCompilerConfig.compilers,
-        overrides: hardhatCompilerConfig.overrides
+        //compilers: hardhatCompilerConfig.compilers,
+        //overrides: hardhatCompilerConfig.overrides
+        version: '0.7.1',
+        settings: {
+            optimizer: {
+                enabled: true,
+                runs: 200
+            }
+        }
     },
     contractSizer: hardhatSizerConfig.contractSizer,
     networks: hardhatNetworkConfig.networks,

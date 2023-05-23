@@ -14,10 +14,22 @@ const ETHERSCAN_API_KEY = process.env.ETHERSCAN_API_KEY!;
 export const hardhatNetworkConfig = {
     networks: {
         localhost: {
-            url: "http://127.0.0.1:8545"
+            url: "http://127.0.0.1:8545",
+            // allowUnlimitedContractSize: true,
+            // throwOnTransactionFailures: true,
+            // throwOnCallFailures: true,
+            // gas: 12000000,
+            // blockGasLimit: 0x1fffffffffffff,
+            // timeout: 1800000
         },
         hardhat: {
-            chainId: 1337 // We set 1337 to make interacting with MetaMask simpler
+            chainId: 1337, // We set 1337 to make interacting with MetaMask simpler
+            // throwOnTransactionFailures: true,
+            // throwOnCallFailures: true,
+            // allowUnlimitedContractSize: true,
+            // gas: 12000000,
+            // blockGasLimit: 0x1fffffffffffff,
+            // timeout: 1800000
         },
         goerli: {
             chainId: 5,

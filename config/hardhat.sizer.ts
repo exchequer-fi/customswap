@@ -3,6 +3,6 @@ export const hardhatSizerConfig = {
         alphaSort: true,
         disambiguatePaths: false,
         runOnCompile: false,
-        strict: false,
+        strict: true,
     },
 };

@@ -34,7 +34,6 @@ async function main() {
 
     const contracts = await loadDeployment();
 
-
     const [deployer] = await ethers.getSigners();
 
     console.log("Deploying address / bal ", deployer.address, (await deployer.getBalance()).toString());
