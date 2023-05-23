@@ -160,16 +160,6 @@ async function main() {
     await printPoolTokens(vault, poolId);
     console.log("total supply: ", await pool.totalSupply());
 
-    // vault.exitPool();
-    // vault.joinPool();
-    // vault.registerPool();
-    // vault.swap();
-
-    {   // General Pool
-        // onExitPool
-        // queryJoin
-        // queryExit
-    }
 }
 
 main()

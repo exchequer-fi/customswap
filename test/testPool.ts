@@ -134,8 +134,10 @@ async function swapTokens(td: TokenDeployer, vd: VaultDeployer, pw: PoolWrapper,
     line("SWAP GIVEN OUT begin");
     await vd.printTokens(await vd.getAddress(), await pw.poolId());
     await td.printTokens([usdc.address, xcqr.address], trader.address);
+
     await pw.swapGivenOut(usdc.address, xcqr.address, trader);
     line("swap");
+
     await vd.printTokens(await vd.getAddress(), await pw.poolId());
     await td.printTokens([usdc.address, xcqr.address], trader.address);
     line("SWAP GIVEN OUT end");
@@ -144,10 +146,13 @@ async function swapTokens(td: TokenDeployer, vd: VaultDeployer, pw: PoolWrapper,
     line("SWAP GIVEN IN begin");
     await vd.printTokens(await vd.getAddress(), await pw.poolId());
     await td.printTokens([usdc.address, xcqr.address], trader.address);
+
     await pw.swapGivenIn(usdc.address, xcqr.address, trader);
     line("swap");
+
     await vd.printTokens(await vd.getAddress(), await pw.poolId());
     await td.printTokens([usdc.address, xcqr.address], trader.address);
+    await vd.getAddress();
     line("SWAP GIVEN IN end");
 
 }
@@ -173,9 +178,14 @@ async function main() {
 
     await seedLiquidity(td, vd, pw, admin, lp);
 
-    // await provideLiquidity(td, vd, pw, admin, lp);
+    await provideLiquidity(td, vd, pw, admin, lp);
 
     await swapTokens(td, vd, pw, usdc, xcqr, trader);
+
+    await pw.diagnostics();
+
+    await pw.updateAmps();
+
 
 }
 
