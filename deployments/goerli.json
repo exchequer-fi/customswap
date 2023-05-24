@@ -35,6 +35,10 @@
       "20230511-verify": "yarn hardhat verify --network goerli 0xD7aECE617B04e6541A9B4CAFaf9a57F73538A62d '0xBA12222222228d8Ba445958a75a0704d566BF2C8' '0x0F3e0c4218b7b0108a3643cFe9D3ec0d4F57c54e' --libraries ./deployments/CustomMathLib.js",
       "20230514": "0x8443D52547D312f82F0CB21f9B9481c887fD45B8",
       "20230514-verify": "yarn hardhat verify --network goerli 0x8443D52547D312f82F0CB21f9B9481c887fD45B8 '0xBA12222222228d8Ba445958a75a0704d566BF2C8' '0x0F3e0c4218b7b0108a3643cFe9D3ec0d4F57c54e' --libraries ./deployments/CustomMathLib.js"
+    },
+    "ComposableCustomPool": {
+      "JpPool": "0x713CE2D8E4Ddd756F35620C4B48Ca5F6558EF080",
+      "BunnyPool": "0x0167Cf094f922e2Bc71f4935778a618d555d3735"
     }
   }
 }

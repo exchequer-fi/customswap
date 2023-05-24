@@ -1,10 +1,14 @@
 import {ethers} from "hardhat";
 
 import {ComposableCustomPool} from "../typechain-types/ComposableCustomPool"
+import {VaultWrapper} from "../scripts/helpers/VaultWrapper";
+import {VaultDeployer} from "../scripts/helpers/VaultDeployer";
+
+const libraryAddress: string = '0xCc3650F13Aa626222e41101a6C9Aac31554E481E';
+const vaultAddress: string = "0xBA12222222228d8Ba445958a75a0704d566BF2C8";
+const poolAddress: string = "0x0167Cf094f922e2Bc71f4935778a618d555d3735";
 
 async function getPool() {
-    const libraryAddress: string = '0xCc3650F13Aa626222e41101a6C9Aac31554E481E';
-    const poolAddress: string = "0x713CE2D8E4Ddd756F35620C4B48Ca5F6558EF080";
 
     const factory = await ethers.getContractFactory("ComposableCustomPool", {
         libraries: {
@@ -87,11 +91,20 @@ async function readSwap(pool: ComposableCustomPool) {
 
 async function main() {
 
-    let [deployer,] = await ethers.getSigners();
+    let [signer,] = await ethers.getSigners();
 
     const pool = await getPool();
 
     await readSwap(pool);
+
+    const poolId = await pool.getPoolId();
+
+    const vault = await VaultDeployer.connect(vaultAddress, signer);
+
+    const vw = new VaultWrapper(vault);
+
+    await vw.printTokens(poolId);
+
 
 }
 

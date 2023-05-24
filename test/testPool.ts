@@ -1,11 +1,18 @@
 import {ethers} from "hardhat";
 
-import {PoolDeployer} from "../scripts/helpers/PoolDeployer";
-import {TokenDeployer} from "../scripts/helpers/TokenDeployer";
-import {VaultDeployer} from "../scripts/helpers/VaultDeployer";
-import {PoolWrapper} from "../scripts/helpers/PoolWrapper";
-import {scaleUp} from "../scripts/helpers/biggy";
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
+
+import {scaleUp} from "../scripts/helpers/biggy";
+
+import {TokenDeployer} from "../scripts/helpers/TokenDeployer";
+import {TokenWrapper} from "../scripts/helpers/TokenWrapper";
+
+import {VaultDeployer} from "../scripts/helpers/VaultDeployer";
+import {VaultWrapper} from "../scripts/helpers/VaultWrapper";
+
+import {PoolDeployer} from "../scripts/helpers/PoolDeployer";
+import {PoolWrapper} from "../scripts/helpers/PoolWrapper";
+
 
 import {TestToken} from "../typechain-types/solidity-utils/test/TestToken"
 import {TestWETH} from "../typechain-types/solidity-utils/test/TestWETH"
@@ -33,9 +40,9 @@ async function deployTokens(admin: SignerWithAddress, lp: SignerWithAddress, tra
     await usdc.transfer(lp.address, scaleUp(10_000_000, await usdc.decimals()));
     await usdc.transfer(trader.address, scaleUp(5_000_000, await usdc.decimals()));
 
-    await td.printTokens([xcqr.address, usdc.address], admin.address);
-    await td.printTokens([xcqr.address, usdc.address], lp.address);
-    await td.printTokens([xcqr.address, usdc.address], trader.address);
+    await TokenWrapper.printTokens([xcqr.address, usdc.address], admin.address);
+    await TokenWrapper.printTokens([xcqr.address, usdc.address], lp.address);
+    await TokenWrapper.printTokens([xcqr.address, usdc.address], trader.address);
 
     line("TOKENS end");
 
@@ -53,106 +60,108 @@ async function deployPool(admin: SignerWithAddress, weth: TestWETH, xcqr: TestTo
 
     const vault = await vd.deployVault(admin.address, weth.address);
 
+    const vw = new VaultWrapper(vault);
+
     const pd = new PoolDeployer(customMath.address);
 
-    const pool = await pd.deployPool(await vault.getAddress(), [xcqr.address, usdc.address], admin.address);
+    const pool = await pd.deployPool(await vault.address, [xcqr.address, usdc.address], admin.address);
 
-    const pw = await new PoolWrapper(customMath.address).connect(pool.address);
+    const pw = await new PoolWrapper(vault, pool);
 
     line("POOL end");
 
-    return {vd, pw};
+    return {vw, pw};
 
 }
 
-async function seedLiquidity(td: TokenDeployer, vd: VaultDeployer, pw: PoolWrapper, admin: SignerWithAddress, lp: SignerWithAddress) {
+async function seedLiquidity(td: TokenDeployer, vw: VaultWrapper, pw: PoolWrapper, admin: SignerWithAddress, lp: SignerWithAddress) {
 
     const poolId = await pw.poolId();
-    const tokens = await vd.getTokens(poolId);
+    const tokens = await vw.getTokens(poolId);
 
     line("INIT begin");
-    await vd.printTokens(await vd.getAddress(), poolId);
-    await td.printTokens(tokens, admin.address);
+    await vw.printTokens(poolId);
+    await TokenWrapper.printTokens(tokens, admin.address);
     await pw.init(tokens, admin);
     console.log("init")
-    await vd.printTokens(await vd.getAddress(), poolId);
-    await td.printTokens(tokens, admin.address);
+    await vw.printTokens(poolId);
+    await TokenWrapper.printTokens(tokens, admin.address);
     line("INIT end");
 
 }
 
-async function provideLiquidity(td: TokenDeployer, vd: VaultDeployer, pw: PoolWrapper, admin: SignerWithAddress, lp: SignerWithAddress) {
+async function provideLiquidity(td: TokenDeployer, vw: VaultWrapper, pw: PoolWrapper, admin: SignerWithAddress, lp: SignerWithAddress) {
 
     const poolId = await pw.poolId();
-    const tokens = await vd.getTokens(poolId);
+    const tokens = await vw.getTokens(poolId);
 
     if (false) {
         line("JOINT EXACT TKN IN begin");
-        await vd.printTokens(await vd.getAddress(), poolId);
-        await td.printTokens(tokens, lp.address);
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens(tokens, lp.address);
         await pw.joinExactTokensIn(tokens, lp);
         console.log("join");
-        await vd.printTokens(await vd.getAddress(), poolId);
-        await td.printTokens(tokens, lp.address);
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens(tokens, lp.address);
         line("JOIN EXACT TKN IN end");
     }
     if (false) {
         line("EXIT EXACT TKN OUT begin");
-        await vd.printTokens(await vd.getAddress(), poolId);
-        await td.printTokens(tokens, lp.address);
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens(tokens, lp.address);
         await pw.exitExactTokensOut(tokens, lp);
         console.log("exit");
-        await vd.printTokens(await vd.getAddress(), poolId);
-        await td.printTokens(tokens, lp.address);
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens(tokens, lp.address);
         line("EXIT EXACT TKN OUT end");
     }
     if (true) {
         line("JOIN EXACT BPT OUT begin");
-        await vd.printTokens(await vd.getAddress(), poolId);
-        await td.printTokens(tokens, lp.address);
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens(tokens, lp.address);
         await pw.joinExactBPTOut(tokens, lp);
         console.log("join");
-        await vd.printTokens(await vd.getAddress(), poolId);
-        await td.printTokens(tokens, lp.address);
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens(tokens, lp.address);
         line("JOIN EXACT BPT end");
     }
     if (true) {
         line("EXIT EXACT BPT IN begin");
-        await vd.printTokens(await vd.getAddress(), poolId);
-        await td.printTokens(tokens, lp.address);
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens(tokens, lp.address);
         await pw.exitExactBPTIn(tokens, lp);
         console.log("exit");
-        await vd.printTokens(await vd.getAddress(), poolId);
-        await td.printTokens(tokens, lp.address);
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens(tokens, lp.address);
         line("EXIT EXACT BPT end");
     }
 
 }
 
-async function swapTokens(td: TokenDeployer, vd: VaultDeployer, pw: PoolWrapper, usdc: Contract, xcqr: Contract, trader: SignerWithAddress) {
+async function swapTokens(td: TokenDeployer, vw: VaultWrapper, pw: PoolWrapper, usdc: Contract, xcqr: Contract, trader: SignerWithAddress) {
 
     line("SWAP GIVEN OUT begin");
-    await vd.printTokens(await vd.getAddress(), await pw.poolId());
-    await td.printTokens([usdc.address, xcqr.address], trader.address);
+    await vw.printTokens(await pw.poolId());
+    await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
 
     await pw.swapGivenOut(usdc.address, xcqr.address, trader);
     line("swap");
 
-    await vd.printTokens(await vd.getAddress(), await pw.poolId());
-    await td.printTokens([usdc.address, xcqr.address], trader.address);
+    await vw.printTokens(await pw.poolId());
+    await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
     line("SWAP GIVEN OUT end");
 
 
     line("SWAP GIVEN IN begin");
-    await vd.printTokens(await vd.getAddress(), await pw.poolId());
-    await td.printTokens([usdc.address, xcqr.address], trader.address);
+    await vw.printTokens(await pw.poolId());
+    await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
 
     await pw.swapGivenIn(usdc.address, xcqr.address, trader);
     line("swap");
 
-    await vd.printTokens(await vd.getAddress(), await pw.poolId());
-    await td.printTokens([usdc.address, xcqr.address], trader.address);
-    await vd.getAddress();
+    await vw.printTokens(await pw.poolId());
+    await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
+    await vw.getAddress();
     line("SWAP GIVEN IN end");
 
 }
@@ -167,7 +176,7 @@ async function main() {
 
     const {weth, usdc, xcqr, td} = await deployTokens(admin, lp, trader);
 
-    const {vd, pw} = await deployPool(admin, weth, usdc, xcqr);
+    const {vw, pw} = await deployPool(admin, weth, usdc, xcqr);
 
     {
         //console.log("PERMISSIONS BEGIN");
@@ -176,11 +185,11 @@ async function main() {
         //console.log("PERMISSIONS END");
     }
 
-    await seedLiquidity(td, vd, pw, admin, lp);
+    await seedLiquidity(td, vw, pw, admin, lp);
 
-    await provideLiquidity(td, vd, pw, admin, lp);
+    await provideLiquidity(td, vw, pw, admin, lp);
 
-    await swapTokens(td, vd, pw, usdc, xcqr, trader);
+    await swapTokens(td, vw, pw, usdc, xcqr, trader);
 
     await pw.diagnostics();
 

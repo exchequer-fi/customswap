@@ -1,5 +1,5 @@
 import {ethers} from "hardhat";
-import {ContractReceipt} from "ethers";
+import {ContractReceipt, Signer} from "ethers";
 import {fp} from "../../test/helpers/numbers";
 import {scaleUp} from "./biggy";
 import {TokenDeployer} from "./TokenDeployer";
@@ -91,7 +91,7 @@ export class PoolDeployer {
         for (let i = 0; i < tokens.length; i++) {
             const a = tokens[i];
             const p = await this.deployRateProvider();
-            const t = await new TokenDeployer().attachToken(a);
+            const t = await TokenDeployer.attach(a);
             const s = await t.symbol();
             // Always return 18 even if the token t.decimals() is not 18
             const d: number = 18;
@@ -134,4 +134,14 @@ export class PoolDeployer {
 
     }
 
+    public static async connect(address: string, customMath: string, signer: Signer) {
+        const factory = await ethers.getContractFactory("ComposableCustomPool", {
+                libraries: {
+                    CustomMath: customMath
+                }
+            }
+        );
+        const pool = await factory.attach(address);
+        return pool.connect(signer);
+    }
 }
