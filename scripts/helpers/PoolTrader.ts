@@ -47,14 +47,14 @@ export class PoolTrader {
                 userData: '0x'
             };
 
-            const amountsIn = await this.vault.callStatic.queryBatchSwap(
+            const change = await this.vault.callStatic.queryBatchSwap(
                 SwapKind.GivenOut,
                 [swapStep],
                 allTokens,
                 funds,
             );
 
-            return amountsIn[0];
+            return change[allTokens.indexOf(tokenIn.address)];
         }
 
     }
@@ -125,14 +125,14 @@ export class PoolTrader {
             userData: '0x'
         };
 
-        const amountsOut = await this.vault.callStatic.queryBatchSwap(
+        const change = await this.vault.callStatic.queryBatchSwap(
             SwapKind.GivenIn,
             [swapStep],
             allTokens,
             funds,
         );
 
-        return amountsOut[0];
+        return change[allTokens.indexOf(tokenOut.address)];
 
     }
 

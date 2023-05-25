@@ -70,15 +70,19 @@ async function deployVault(admin: SignerWithAddress, weth: TestWETH) {
 
 async function deployPool(vault: Vault, customMath: Contract, admin: SignerWithAddress, xcqr: TestToken, usdc: TestToken) {
 
-    // A1 is the upside
-    // A2 is the downside
-    // range [1, 499]
-    // higher number flattens
-    // A1 = 1 - maximum upside (curvy)
-    // A2 = 499 - support for downside (flat)
+    // range [1, 499], higher number flattens
 
+    // A1 is the downside
+    // support for downside
+    // higher number - flatter
+    const A1 = 499;
 
-    const pd = new PoolDeployer(customMath.address, 1, 499);
+    // A2 is the upside
+    // maximum upside
+    // lower number - curvier
+    const A2 = 1;
+
+    const pd = new PoolDeployer(customMath.address, A1, A2);
 
     return await pd.deployPool(await vault.address, [xcqr.address, usdc.address], admin.address);
 
@@ -153,8 +157,8 @@ async function provideLiquidity(vault: Vault, pool: ComposableCustomPool, admin:
 }
 
 async function printSwap(tokenIn: TestToken, amountIn: BigNumber, tokenOut: TestToken, amountOut: BigNumber) {
-    const aIn = parseFloat(scaleDn(amountIn, await tokenIn.decimals()));
-    const aOut = parseFloat(scaleDn(amountOut, await tokenOut.decimals()));
+    const aIn = scaleDn(amountIn, await tokenIn.decimals());
+    const aOut = scaleDn(amountOut, await tokenOut.decimals());
     const symIn = await tokenIn.symbol();
     let price;
     if (symIn == "USDC") {
@@ -162,7 +166,7 @@ async function printSwap(tokenIn: TestToken, amountIn: BigNumber, tokenOut: Test
     } else {
         price = aOut / aIn;
     }
-    console.log("price:", price, "in", aIn, "out", aOut);
+    console.log("price:", Math.abs(price), "in", aIn, "out", aOut);
 }
 
 async function swapTokens(vault: Vault, pool: ComposableCustomPool, usdc: TestToken, xcqr: TestToken, trader: SignerWithAddress) {
@@ -172,7 +176,7 @@ async function swapTokens(vault: Vault, pool: ComposableCustomPool, usdc: TestTo
     const poolId = await pool.getPoolId();
 
     if (true) {
-        line("SWAP GIVEN OUT begin");
+        line("BUY 10 XCHR");
         await vw.printTokens(poolId);
         await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
 
@@ -181,15 +185,15 @@ async function swapTokens(vault: Vault, pool: ComposableCustomPool, usdc: TestTo
         const actualAmountIn = await pt.swapGivenOut(usdc, xcqr, actualAmountOut, trader);
 
         await printSwap(usdc, actualAmountIn, xcqr, actualAmountOut);
-        //console.log("expected In", expectedAmountIn.toString())
+        //console.log("expected USDC", +expectedAmountIn.toString());
+        //console.log("actual   USDC", +actualAmountIn.toString());
 
         await vw.printTokens(poolId);
         await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
-        line("SWAP GIVEN OUT end");
     }
 
-    if (false) {
-        line("SWAP GIVEN IN begin");
+    if (true) {
+        line("SELL 10 XCHR");
         await vw.printTokens(poolId);
         await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
 
@@ -198,49 +202,121 @@ async function swapTokens(vault: Vault, pool: ComposableCustomPool, usdc: TestTo
         const actualAmountOut = await pt.swapGivenIn(xcqr, usdc, actualAmountIn, trader);
 
         await printSwap(xcqr, actualAmountIn, usdc, actualAmountOut);
-        //console.log("expected Out", expectedAmountOut.toString());
+        //console.log("expected USDC", -expectedAmountOut.toString());
+        //console.log("actual   USDC", +actualAmountOut.toString());
 
         await vw.printTokens(poolId);
         await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
-        await vw.getAddress();
+    }
+
+    if (true) {
+        line("SELL 30 USDC");
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
+
+        const actualAmountIn = scaleUp(30, 6);
+        //const expectedAmountOut = await pt.queryGivenIn(usdc, xcqr, actualAmountIn, trader);
+        const actualAmountOut = await pt.swapGivenIn(usdc, xcqr, actualAmountIn, trader);
+
+        await printSwap(usdc, actualAmountIn, xcqr, actualAmountOut);
+        //console.log("expected XCHR", -expectedAmountOut.toString());
+        //console.log("actual   XCHR", +actualAmountOut.toString());
+
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
         line("SWAP GIVEN IN end");
     }
-    if (false) {
-        line("SWAP GIVEN OUT begin");
+
+
+    if (true) {
+        line("BUY 30 USDC");
         await vw.printTokens(poolId);
         await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
 
         const actualAmountOut = scaleUp(30, 6);
-        // const expectedAmountIn = await pt.queryGivenOut(xcqr, usdc, actualAmountOut, trader);
+        //const expectedAmountIn = await pt.queryGivenOut(xcqr, usdc, actualAmountOut, trader);
         const actualAmountIn = await pt.swapGivenOut(xcqr, usdc, actualAmountOut, trader);
 
         await printSwap(xcqr, actualAmountIn, usdc, actualAmountOut);
-        //console.log("expected In", expectedAmountIn.toString())
+        //console.log("expected XCHR", +expectedAmountIn.toString())
+        //console.log("actual   XCHR", +actualAmountIn.toString())
 
         await vw.printTokens(poolId);
         await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
         line("SWAP GIVEN OUT end");
     }
-    if (false) {
-        line("SWAP GIVEN IN begin");
-        await vw.printTokens(poolId);
-        await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
-
-        const actualAmountIn = scaleUp(30, 6);
-        //const expectedAmountOut = await pt.queryGivenIn(xcqr, usdc, actualAmountIn, trader);
-        const actualAmountOut = await pt.swapGivenIn(usdc, xcqr, actualAmountIn, trader);
-
-        await printSwap(usdc, actualAmountIn, xcqr, actualAmountOut);
-        //console.log("expected Out", expectedAmountOut.toString());
-
-        await vw.printTokens(poolId);
-        await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
-        await vw.getAddress();
-        line("SWAP GIVEN IN end");
-    }
-
 
 }
+
+async function swapRoundTrip(vault: Vault, pool: ComposableCustomPool, usdc: TestToken, xcqr: TestToken, trader: SignerWithAddress) {
+
+    const vw = new VaultWrapper(vault);
+    const pt = new PoolTrader(vault, pool);
+    const poolId = await pool.getPoolId();
+
+    {
+        line("BUY 10 XCHR");
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
+
+        const actualAmountOut = scaleUp(10, 18);
+        const actualAmountIn = await pt.swapGivenOut(usdc, xcqr, actualAmountOut, trader);
+
+        await printSwap(usdc, actualAmountIn, xcqr, actualAmountOut);
+
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
+
+        {
+            console.log("spot");
+            const aout = scaleUp(1, 15);
+            const ain = await pt.queryGivenOut(usdc, xcqr, aout, trader);
+            await printSwap(usdc, ain, xcqr, aout);
+        }
+    }
+
+    if (true) {
+        line("SELL 20 XCHR");
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
+
+        const actualAmountIn = scaleUp(20, 18);
+        const actualAmountOut = await pt.swapGivenIn(xcqr, usdc, actualAmountIn, trader);
+
+        await printSwap(xcqr, actualAmountIn, usdc, actualAmountOut);
+
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
+
+        {
+            console.log("spot");
+            const ain = scaleUp(1, 15);
+            const aout = await pt.queryGivenIn(xcqr, usdc, ain, trader);
+            await printSwap(xcqr, ain, usdc, aout);
+        }
+    }
+    if (true) {
+        line("BUY 10 XCHR");
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
+
+        const actualAmountOut = scaleUp(10, 18);
+        const actualAmountIn = await pt.swapGivenOut(usdc, xcqr, actualAmountOut, trader);
+
+        await printSwap(usdc, actualAmountIn, xcqr, actualAmountOut);
+
+        await vw.printTokens(poolId);
+        await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
+
+        {
+            console.log("spot");
+            const aout = scaleUp(1, 15);
+            const ain = await pt.queryGivenOut(usdc, xcqr, aout, trader);
+            await printSwap(usdc, ain, xcqr, aout);
+        }
+    }
+}
+
 
 async function main() {
 
@@ -255,10 +331,9 @@ async function main() {
     const {vault, customMath} = await deployVault(admin, weth);
 
     const pool = await deployPool(vault, customMath, admin, usdc, xcqr);
-    {
-        const pm = new PoolManager(vault, pool);
-        await pm.diagnostics();
-    }
+
+    // const pm = new PoolManager(vault, pool);
+    // await pm.diagnostics();
     {
         //console.log("PERMISSIONS BEGIN");
         //await vd.grantPermission(vault.address, 'joinPool', lp.address);
@@ -270,7 +345,9 @@ async function main() {
 
     // await provideLiquidity(vault, pool, admin, lp);
 
-    await swapTokens(vault, pool, usdc, xcqr, trader);
+    // await swapTokens(vault, pool, usdc, xcqr, trader);
+
+    await swapRoundTrip(vault, pool, usdc, xcqr, trader);
 
 }
 
