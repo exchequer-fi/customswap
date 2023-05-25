@@ -2,10 +2,10 @@ import {ethers} from "hardhat";
 import {defaultAbiCoder} from "@ethersproject/abi";
 
 import {BigNumber} from "ethers";
-import {maxUint} from "./helpers/numbers";
+import {maxUint} from "../scripts/helpers/numbers";
 
-import {TestToken} from "../typechain-types/solidity-utils/test/TestToken"
-import {IVault, Vault} from "../typechain-types/vault/Vault"
+import {TestToken} from "../../../Projects/boot/xcqr-customswap/typechain-types/solidity-utils/test/TestToken"
+import {IVault, Vault} from "../../../Projects/boot/xcqr-customswap/typechain-types/vault/Vault"
 
 const MAX_UINT256: BigNumber = maxUint(256);
 const MAX_UINT112: BigNumber = maxUint(112);

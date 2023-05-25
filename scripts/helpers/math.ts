@@ -1,7 +1,7 @@
 import { Decimal } from "decimal.js";
 import { BigNumber } from "ethers";
 
-import { BigNumberish, decimal, bn, fp, fromFp, toFp } from "../../../numbers";
+import { BigNumberish, decimal, bn, fp, fromFp, toFp } from "./numbers";
 
 function _calcZ(
   A: BigNumberish,

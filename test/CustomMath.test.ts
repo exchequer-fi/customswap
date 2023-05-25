@@ -1,7 +1,7 @@
 import {Contract} from 'ethers';
-import {deploy} from './helpers/contract';
-import {bn, fp, BigNumber} from './helpers/numbers';
-import {expectEqualWithError} from './helpers/test/relativeError';
+import {deploy} from '../scripts/helpers/contract';
+import {bn, fp, BigNumber} from '../scripts/helpers/numbers';
+import {expectEqualWithError} from '../scripts/helpers/relativeError';
 import {
     calculateAnalyticalInvariantForTwoTokens,
     calculateInvariants,
@@ -12,7 +12,7 @@ import {
     calcTokenInGivenExactBptOut,
     calcBptInGivenExactTokensOut,
     calcTokenOutGivenExactBptIn,
-} from './helpers/models/pools/custom/math';
+} from '../scripts/helpers/math';
 import {random} from 'lodash';
 import {expect} from 'chai';
 

@@ -20,7 +20,7 @@ export class VaultWrapper {
     }
 
     public async printTokens(poolId: string) {
-        console.log("VAULT TOKENS:", poolId);
+        console.log("VAULT TOKENS");
         const {tokens: tokens, balances,} = await this.vault.getPoolTokens(poolId);
         for (let i = 0; i < tokens.length; i++) {
             const t = await TokenDeployer.attach(tokens[i]);

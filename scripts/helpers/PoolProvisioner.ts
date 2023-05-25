@@ -3,12 +3,11 @@ import {BigNumber, Signer} from "ethers";
 
 import {IVault, Vault} from "../../typechain-types/vault/Vault";
 import {TokenDeployer} from "./TokenDeployer";
-import {maxUint} from "../../test/helpers/numbers";
-import {scaleUp, scaleDn} from "./biggy";
-import {inReceipt} from "./expectEvent";
+import {maxUint} from "./numbers";
+import {scaleUp} from "./biggy";
 
 import {ComposableCustomPool} from "../../typechain-types/ComposableCustomPool";
-import {advanceTime, currentTimestamp, setNextBlockTimestamp} from "./TimeMachine";
+import {delay} from "./TimeMachine";
 
 enum JoinKind {
     INIT = 0,
@@ -21,56 +20,15 @@ enum ExitKind {
     BPT_IN_FOR_EXACT_TOKENS_OUT
 }
 
-enum SwapKind {
-    GivenIn = 0,
-    GivenOut = 1
-}
-
-function delay(ms: number) {
-    console.log("sleep", ms, "ms")
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-export class PoolWrapper {
+export class PoolProvisioner {
 
     private static readonly MAX_UINT256: BigNumber = maxUint(256);
-    private static readonly DAY = 60 * 60 * 24;
-
     private vault: Vault;
     private pool: ComposableCustomPool;
 
     constructor(vault: Vault, pool: ComposableCustomPool) {
         this.vault = vault;
         this.pool = pool;
-    }
-
-    public async poolId() {
-        return this.pool.getPoolId();
-    }
-
-    public async printRates() {
-
-        console.log("pool rates");
-
-        const {tokens: tokens} = await this.vault.getPoolTokens(await this.pool.getPoolId());
-
-        for (let i = 0; i < tokens.length; i++) {
-            let t = await TokenDeployer.attach(tokens[i]);
-            let sym = await t.symbol();
-            // let scale = toBig(1, await t.decimals());
-            let r = await this.pool.getTokenRate(t.address);
-            if (sym == "BPTT") {
-                console.log("%s r=%d cache: ", sym, r);
-            } else {
-                const {rate, oldRate, duration, expires} = await this.pool.getTokenRateCache(t.address);
-                console.log("%s r=%d cache r=%d o=%d d=%d e=%d", sym,
-                    r,
-                    rate,
-                    oldRate,
-                    duration,
-                    expires);
-            }
-        }
     }
 
     public async init(tokens: string[], signer: Signer) {
@@ -87,7 +45,7 @@ export class PoolWrapper {
             const s = await t.symbol();
             switch (s) {
                 case "USDC": {
-                    let b = scaleUp(3000, d);
+                    let b = scaleUp(60, d);
                     amounts.push(b);
                     limits.push(b);
                     await t.approve(this.vault.address, b);
@@ -97,7 +55,7 @@ export class PoolWrapper {
                 }
                 case "XCR":
                 case "XCHR": {
-                    let b = scaleUp(1000, d);
+                    let b = scaleUp(20, d);
                     amounts.push(b);
                     limits.push(b);
                     await t.approve(this.vault.address, b);
@@ -107,7 +65,7 @@ export class PoolWrapper {
                 default:
                     // DO push BPT to amounts - unlike join or exit, init requires this
                     amounts.push(BigNumber.from(0));
-                    limits.push(PoolWrapper.MAX_UINT256);
+                    limits.push(PoolProvisioner.MAX_UINT256);
                     break;
             }
         }
@@ -150,7 +108,7 @@ export class PoolWrapper {
                     break;
                 }
                 default:
-                    limits.push(PoolWrapper.MAX_UINT256);
+                    limits.push(PoolProvisioner.MAX_UINT256);
                     break;
             }
         }
@@ -201,7 +159,7 @@ export class PoolWrapper {
                     break;
                 }
                 default:
-                    limits.push(PoolWrapper.MAX_UINT256);
+                    limits.push(PoolProvisioner.MAX_UINT256);
                     break;
             }
         }
@@ -311,141 +269,4 @@ export class PoolWrapper {
         await tx.wait();
     }
 
-    public async swapGivenOut(usdc: string, xhqr: string, signer: Signer) {
-
-        const poolId = await this.pool.getPoolId();
-
-        const sa = await signer.getAddress();
-
-        const amountOut = scaleUp(10, 18);
-
-        const maxAmountIn = PoolWrapper.MAX_UINT256;
-
-        const t = await TokenDeployer.connect(usdc, signer);
-        await t.approve(this.vault.address, maxAmountIn);
-
-        const singleSwap: IVault.SingleSwapStruct = {
-            poolId: poolId,
-            kind: SwapKind.GivenOut,
-            assetIn: usdc,
-            assetOut: xhqr,
-            amount: amountOut,
-            userData: '0x'
-        };
-
-        const funds: IVault.FundManagementStruct = {
-            sender: sa,
-            recipient: sa,
-            fromInternalBalance: false,
-            toInternalBalance: false
-        };
-
-        const deadline: BigNumber = PoolWrapper.MAX_UINT256;
-
-        const v = this.vault.connect(signer);
-        const tx = await v.swap(
-            singleSwap,
-            funds,
-            maxAmountIn,
-            deadline
-        );
-        const receipt = await tx.wait();
-
-        {
-            const args = inReceipt(receipt, 'Swap').args;
-            const amountIn = parseFloat(scaleDn(args.amountIn, 6));
-            const amountOut = parseFloat(scaleDn(args.amountOut, 18));
-            const price = amountIn / amountOut;
-            console.log("price:", price, amountIn, amountOut);
-        }
-    }
-
-    public async swapGivenIn(usdc: string, xhqr: string, signer: Signer) {
-
-        const poolId = await this.pool.getPoolId();
-
-        const sa = await signer.getAddress();
-
-        const amountIn = scaleUp(10, 18);
-
-        const minAmountOut = 0;
-
-        const t = await TokenDeployer.connect(xhqr, signer);
-        await t.approve(this.vault.address, amountIn);
-
-        const singleSwap: IVault.SingleSwapStruct = {
-            poolId: poolId,
-            kind: SwapKind.GivenIn,
-            assetIn: xhqr,
-            assetOut: usdc,
-            amount: amountIn,
-            userData: '0x'
-        };
-
-        const funds: IVault.FundManagementStruct = {
-            sender: sa,
-            recipient: sa,
-            fromInternalBalance: false,
-            toInternalBalance: false
-        };
-
-        const deadline: BigNumber = PoolWrapper.MAX_UINT256;
-
-        const tx = await this.vault.connect(signer).swap(
-            singleSwap,
-            funds,
-            minAmountOut,
-            deadline
-        );
-
-        const receipt = await tx.wait();
-        {
-            const args = inReceipt(receipt, 'Swap').args;
-            const amountIn = parseFloat(scaleDn(args.amountIn, 18));
-            const amountOut = parseFloat(scaleDn(args.amountOut, 6));
-            const price = amountOut / amountIn;
-            console.log("price:", price, amountOut, amountIn);
-        }
-
-    }
-
-    public async diagnostics() {
-        const {value1, isUpdating1} = await this.pool.getAmplificationParameter1();
-        console.log("A1: ", scaleDn(value1, 3), "U", isUpdating1, "P");
-        const {value2, isUpdating2} = await this.pool.getAmplificationParameter2();
-        console.log("A2: ", scaleDn(value2, 3), "U", isUpdating2, "P");
-        console.log("SwapFee:", (await this.pool.getProtocolFeePercentageCache(0)).toString());
-        console.log("Yield:", (await this.pool.getProtocolFeePercentageCache(2)).toString());
-        console.log("FeeDelegation:", (await this.pool.getProtocolSwapFeeDelegation()));
-
-        console.log("supplay", scaleDn(await this.pool.totalSupply(), 18));
-        console.log("rate   ", scaleDn(await this.pool.getRate(), 18));
-    }
-
-    public async updateAmps() {
-
-        const newAmp = scaleUp(450, 0);
-        const duration = BigNumber.from(3).mul(PoolWrapper.DAY);
-        const refTime = await currentTimestamp();
-        const startTime = refTime.add(1);
-        const endTime = startTime.add(duration);
-
-        await setNextBlockTimestamp(startTime);
-        await this.pool.startAmplificationParameter1Update(newAmp, endTime);
-
-        {
-            console.log("time", new Date(refTime.toNumber() * 1000).toString());
-            const {value1, isUpdating1} = await this.pool.getAmplificationParameter1();
-            console.log("A1: ", scaleDn(value1, 3), "U", isUpdating1, "P");
-        }
-
-        await advanceTime(duration.sub(1));
-
-        {
-            console.log("time", new Date((await currentTimestamp()).toNumber() * 1000).toString());
-            const {value1, isUpdating1} = await this.pool.getAmplificationParameter1();
-            console.log("A1: ", scaleDn(value1, 3), "U", isUpdating1, "P");
-        }
-
-    }
 }

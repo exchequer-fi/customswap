@@ -1,5 +1,5 @@
 import {ethers, network} from "hardhat";
-import {bn} from "../../test/helpers/numbers";
+import {bn} from "./numbers";
 import {BigNumber} from "ethers";
 
 export async function currentTimestamp() {
@@ -14,4 +14,9 @@ export async function setNextBlockTimestamp(timestamp: BigNumber) {
 export async function advanceTime(seconds: BigNumber) {
     await ethers.provider.send('evm_increaseTime', [parseInt(seconds.toString())]);
     await ethers.provider.send('evm_mine', []);
+}
+
+export function delay(ms: number) {
+    console.log("sleep", ms, "ms")
+    return new Promise(resolve => setTimeout(resolve, ms));
 }

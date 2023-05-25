@@ -1,5 +1,6 @@
 import {ethers} from "hardhat";
 
+
 async function main() {
 
     const factory = await ethers.getContractFactory("TestToken");
@@ -9,6 +10,8 @@ async function main() {
     const contract = await factory.attach(address);
 
     const decimals = ethers.BigNumber.from(10).pow(18);
+
+    const bunny = "0xA91AccFfaf556C45d18dd33B8c9B82CD3464DCCB";
 
     const [deployer] = await ethers.getSigners();
 

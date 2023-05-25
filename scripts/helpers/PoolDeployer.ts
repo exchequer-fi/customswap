@@ -1,6 +1,6 @@
 import {ethers} from "hardhat";
 import {ContractReceipt, Signer} from "ethers";
-import {fp} from "../../test/helpers/numbers";
+import {fp} from "./numbers";
 import {scaleUp} from "./biggy";
 import {TokenDeployer} from "./TokenDeployer";
 
@@ -10,8 +10,8 @@ export class PoolDeployer {
 
     public readonly desc: string = "XCQR CustomSwap XCQR/USDC";
     public readonly symbol: string = "BPTT";
-    public readonly A1: number = 400;
-    public readonly A2: number = 400;
+    public readonly A1: number;
+    public readonly A2: number;
     public readonly MONTH = 30 * 24 * 60 * 60;
     public readonly swapFee = ethers.BigNumber.from(10).pow(16);
 
@@ -21,8 +21,11 @@ export class PoolDeployer {
     public readonly xcqrRate: number = 3;
     public readonly usdcRate: number = 1;
 
-    constructor(customMath: string) {
+    constructor(customMath: string, A1: number, A2: number) {
         this.customMath = customMath;
+        this.A1 = A1;
+        this.A2 = A2;
+        console.log("A1", A1, "A2", A2);
     }
 
     private async deployProtocolFeeProvider(vault: string) {

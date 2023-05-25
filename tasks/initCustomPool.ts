@@ -10,7 +10,7 @@ import {VaultDeployer} from "../scripts/helpers/VaultDeployer";
 import {VaultWrapper} from "../scripts/helpers/VaultWrapper";
 
 import {PoolDeployer} from "../scripts/helpers/PoolDeployer";
-import {PoolWrapper} from "../scripts/helpers/PoolWrapper";
+import {PoolTrader} from "../scripts/helpers/PoolTrader";
 
 
 const libraryAddress: string = '0xCc3650F13Aa626222e41101a6C9Aac31554E481E';
@@ -48,7 +48,7 @@ async function initPool() {
 
     await delay(1000);
 
-    const pw = new PoolWrapper(vault, pool);
+    const pw = new PoolTrader(vault, pool);
 
     await delay(1000);
 
