@@ -45,7 +45,7 @@ export class PoolProvisioner {
             const s = await t.symbol();
             switch (s) {
                 case "USDC": {
-                    let b = scaleUp(60, d);
+                    let b = scaleUp(1000, d);
                     amounts.push(b);
                     limits.push(b);
                     await t.approve(this.vault.address, b);
@@ -55,7 +55,7 @@ export class PoolProvisioner {
                 }
                 case "XCR":
                 case "XCHR": {
-                    let b = scaleUp(20, d);
+                    let b = scaleUp(1003, d);
                     amounts.push(b);
                     limits.push(b);
                     await t.approve(this.vault.address, b);
@@ -100,6 +100,7 @@ export class PoolProvisioner {
                     await t.approve(this.vault.address, b);
                     break;
                 }
+                case "XCR":
                 case "XCHR": {
                     let b = scaleUp(30, d);
                     amounts.push(b);
@@ -151,6 +152,7 @@ export class PoolProvisioner {
                     tokenCounter++;
                     break;
                 }
+                case "XCR":
                 case "XCHR": {
                     let b = scaleUp(10, d);
                     limits.push(b);
@@ -198,6 +200,7 @@ export class PoolProvisioner {
                     limits.push(BigNumber.from(0));
                     break;
                 case "XCHR":
+                case "XCR":
                     amounts.push(scaleUp(1, d));
                     limits.push(BigNumber.from(0));
                     break;
@@ -242,6 +245,7 @@ export class PoolProvisioner {
                     exitTokenIndex = tokenCounter;
                     tokenCounter++;
                     break;
+                case "XCR":
                 case "XCHR":
                     limits.push(BigNumber.from(0));
                     tokenCounter++;

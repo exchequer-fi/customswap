@@ -20,13 +20,15 @@ export class VaultWrapper {
     }
 
     public async printTokens(poolId: string) {
-        console.log("VAULT TOKENS");
+        console.log("VAULT TOKENS".padEnd(20), poolId);
         const {tokens: tokens, balances,} = await this.vault.getPoolTokens(poolId);
+
         for (let i = 0; i < tokens.length; i++) {
             const t = await TokenDeployer.attach(tokens[i]);
             const s = await t.symbol();
             const d = await t.decimals();
-            console.log(s.padEnd(10), scaleDn(balances[i], d));
+            if (s.includes("XR")) continue;
+            console.log(s.padEnd(20), scaleDn(balances[i], d));
         }
     }
 

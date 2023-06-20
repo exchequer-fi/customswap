@@ -38,7 +38,8 @@
     },
     "ComposableCustomPool": {
       "JpPool": "0x713CE2D8E4Ddd756F35620C4B48Ca5F6558EF080",
-      "BunnyPool": "0x0167Cf094f922e2Bc71f4935778a618d555d3735"
+      "BunnyPool": "0x0167Cf094f922e2Bc71f4935778a618d555d3735",
+      "20230530": "0xd8E51aC844e6309fffc532C9749B8F8458375c49"
     }
   }
 }

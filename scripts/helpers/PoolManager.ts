@@ -47,6 +47,7 @@ export class PoolManager {
             }
         }
     }
+
     public async diagnostics() {
         const {value1, isUpdating1} = await this.pool.getAmplificationParameter1();
         console.log("A1: ", scaleDn(value1, 3), "U", isUpdating1, "P");
@@ -58,6 +59,8 @@ export class PoolManager {
         //console.log("supplay", scaleDn(await this.pool.totalSupply(), 18));
         //console.log("rate   ", scaleDn(await this.pool.getRate(), 18));
     }
+
+
     public async updateAmps() {
 
         const newAmp = scaleUp(450, 0);
@@ -82,6 +85,10 @@ export class PoolManager {
             const {value1, isUpdating1} = await this.pool.getAmplificationParameter1();
             console.log("A1: ", scaleDn(value1, 3), "U", isUpdating1, "P");
         }
+    }
 
+    public async stopAmpUpdates() {
+        await this.pool.stopAmplificationParameter1Update();
+        await this.pool.stopAmplificationParameter2Update();
     }
 }

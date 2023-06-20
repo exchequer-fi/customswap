@@ -1,5 +1,5 @@
-import {ethers} from "hardhat";
-import {BigNumber, Contract} from "ethers";
+import {ethers, network} from "hardhat";
+import {BigNumber, Signer} from "ethers";
 
 import {SignerWithAddress} from "@nomiclabs/hardhat-ethers/dist/src/signer-with-address";
 
@@ -14,139 +14,67 @@ import {VaultWrapper} from "../scripts/helpers/VaultWrapper";
 import {PoolDeployer} from "../scripts/helpers/PoolDeployer";
 import {PoolTrader} from "../scripts/helpers/PoolTrader";
 
+
 import {TestToken} from "../typechain-types/solidity-utils/test/TestToken"
-import {TestWETH} from "../typechain-types/solidity-utils/test/TestWETH"
 import {ComposableCustomPool} from "../typechain-types/ComposableCustomPool"
 import {Vault} from "../typechain-types/vault/Vault"
 import {PoolProvisioner} from "../scripts/helpers/PoolProvisioner";
-import {PoolReader} from "../scripts/helpers/PoolReader";
+import {delay} from "../scripts/helpers/TimeMachine";
 
 function line(msg: string) {
     console.log("---", msg, "---------------------------------");
 }
 
-async function deployTokens(admin: SignerWithAddress, lp: SignerWithAddress, trader: SignerWithAddress) {
-
-    line("TOKEN begin");
-
-    const td = new TokenDeployer();
-
-    const weth = await td.deployWETH();
-
-    const xcqr = await td.deployToken("XCHR Test Token", "XCHR", 18);
-    await xcqr.mint(admin.address, scaleUp(30_000_000, await xcqr.decimals()));
-    await xcqr.transfer(lp.address, scaleUp(10_000_000, await xcqr.decimals()));
-    await xcqr.transfer(trader.address, scaleUp(5_000_000, await xcqr.decimals()));
-
-    const usdc = await td.deployToken("USDC Test Token", "USDC", 6);
-    await usdc.mint(admin.address, scaleUp(30_000_000, await usdc.decimals()));
-    await usdc.transfer(lp.address, scaleUp(10_000_000, await usdc.decimals()));
-    await usdc.transfer(trader.address, scaleUp(5_000_000, await usdc.decimals()));
-
-    await TokenWrapper.printTokens([xcqr.address, usdc.address], admin.address);
-    await TokenWrapper.printTokens([xcqr.address, usdc.address], lp.address);
-    await TokenWrapper.printTokens([xcqr.address, usdc.address], trader.address);
-
-    line("TOKENS end");
-
-    return {weth, usdc, xcqr};
-}
-
-async function deployVault(admin: SignerWithAddress, weth: TestWETH) {
-
-    const factory = await ethers.getContractFactory("CustomMath");
-
-    const customMath = await factory.deploy();
-
-    const vd = new VaultDeployer();
-
-    const vault = await vd.deployVault(admin.address, weth.address);
-
-    return {vault, customMath};
-
-}
-
-async function deployPool(vault: Vault, customMath: Contract, admin: SignerWithAddress, xcqr: TestToken, usdc: TestToken) {
-
-    // Amplification range: [1, 499], lower number more convexity, higher number less convexity
-
-    // maximum flatness for XCQR downside
-    const t1Address = xcqr.address;
-    const t1Flatness = 499;
-
-    // minimum flatness for USDC downside
-    const t2Address = usdc.address;
-    const t2Flatness = 1;
-
-    const pd = new PoolDeployer(customMath.address);
-
-    return await pd.deployPool(await vault.address, [t1Address, t2Address], [t1Flatness, t2Flatness], admin.address);
-
-}
-
-async function initPool(vault: Vault, pool: ComposableCustomPool, admin: SignerWithAddress, lp: SignerWithAddress) {
+async function provideLiquidity(vault: Vault, pool: ComposableCustomPool, admin: Signer, lp: Signer) {
 
     const vw = new VaultWrapper(vault);
     const pw = new PoolProvisioner(vault, pool);
     const poolId = await pool.getPoolId();
     const tokens = await vw.getTokens(poolId);
-
-    line("INIT begin");
-    await vw.printTokens(poolId);
-    await TokenWrapper.printTokens(tokens, admin.address);
-    await pw.init(tokens, admin);
-    console.log("init")
-    await vw.printTokens(poolId);
-    await TokenWrapper.printTokens(tokens, admin.address);
-    line("INIT end");
-
-}
-
-async function provideLiquidity(vault: Vault, pool: ComposableCustomPool, admin: SignerWithAddress, lp: SignerWithAddress) {
-
-    const vw = new VaultWrapper(vault);
-    const pw = new PoolProvisioner(vault, pool);
-    const poolId = await pool.getPoolId();
-    const tokens = await vw.getTokens(poolId);
-
+    const lpAddress = await lp.getAddress();
     {
         line("JOINT EXACT TKN IN begin");
         await vw.printTokens(poolId);
-        await TokenWrapper.printTokens(tokens, lp.address);
+        await TokenWrapper.printTokens(tokens, lpAddress);
         await pw.joinExactTokensIn(tokens, lp);
         console.log("join");
         await vw.printTokens(poolId);
-        await TokenWrapper.printTokens(tokens, lp.address);
+        await TokenWrapper.printTokens(tokens, lpAddress);
         line("JOIN EXACT TKN IN end");
     }
+    await delay(2000);
+
     {
         line("EXIT EXACT TKN OUT begin");
         await vw.printTokens(poolId);
-        await TokenWrapper.printTokens(tokens, lp.address);
+        await TokenWrapper.printTokens(tokens, lpAddress);
         await pw.exitExactTokensOut(tokens, lp);
         console.log("exit");
         await vw.printTokens(poolId);
-        await TokenWrapper.printTokens(tokens, lp.address);
+        await TokenWrapper.printTokens(tokens, lpAddress);
         line("EXIT EXACT TKN OUT end");
     }
+    await delay(2000);
+
     {
         line("JOIN EXACT BPT OUT begin");
         await vw.printTokens(poolId);
-        await TokenWrapper.printTokens(tokens, lp.address);
+        await TokenWrapper.printTokens(tokens, lpAddress);
         await pw.joinExactBPTOut(tokens, lp);
         console.log("join");
         await vw.printTokens(poolId);
-        await TokenWrapper.printTokens(tokens, lp.address);
+        await TokenWrapper.printTokens(tokens, lpAddress);
         line("JOIN EXACT BPT end");
     }
+    await delay(2000);
     {
         line("EXIT EXACT BPT IN begin");
         await vw.printTokens(poolId);
-        await TokenWrapper.printTokens(tokens, lp.address);
+        await TokenWrapper.printTokens(tokens, lpAddress);
         await pw.exitExactBPTIn(tokens, lp);
         console.log("exit");
         await vw.printTokens(poolId);
-        await TokenWrapper.printTokens(tokens, lp.address);
+        await TokenWrapper.printTokens(tokens, lpAddress);
         line("EXIT EXACT BPT end");
     }
 
@@ -172,11 +100,11 @@ async function swapTokens(vault: Vault, pool: ComposableCustomPool, usdc: TestTo
     const poolId = await pool.getPoolId();
 
     if (true) {
-        line("BUY 10 XCHR");
+        line("BUY 100 XCHR");
         await vw.printTokens(poolId);
         await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
 
-        const actualAmountOut = scaleUp(10, 18);
+        const actualAmountOut = scaleUp(100, 18);
         //const expectedAmountIn = await pt.queryGivenOut(usdc, xcqr, actualAmountOut, trader);
         const actualAmountIn = await pt.swapGivenOut(usdc, xcqr, actualAmountOut, trader);
 
@@ -187,13 +115,14 @@ async function swapTokens(vault: Vault, pool: ComposableCustomPool, usdc: TestTo
         await vw.printTokens(poolId);
         await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
     }
+    await delay(2000);
 
     if (true) {
-        line("SELL 10 XCHR");
+        line("SELL 100 XCHR");
         await vw.printTokens(poolId);
         await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
 
-        const actualAmountIn = scaleUp(10, 18);
+        const actualAmountIn = scaleUp(100, 18);
         //const expectedAmountOut = await pt.queryGivenIn(xcqr, usdc, actualAmountIn, trader);
         const actualAmountOut = await pt.swapGivenIn(xcqr, usdc, actualAmountIn, trader);
 
@@ -204,13 +133,14 @@ async function swapTokens(vault: Vault, pool: ComposableCustomPool, usdc: TestTo
         await vw.printTokens(poolId);
         await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
     }
+    await delay(2000);
 
     if (true) {
-        line("SELL 30 USDC");
+        line("SELL 100 USDC");
         await vw.printTokens(poolId);
         await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
 
-        const actualAmountIn = scaleUp(30, 6);
+        const actualAmountIn = scaleUp(100, 6);
         //const expectedAmountOut = await pt.queryGivenIn(usdc, xcqr, actualAmountIn, trader);
         const actualAmountOut = await pt.swapGivenIn(usdc, xcqr, actualAmountIn, trader);
 
@@ -220,16 +150,16 @@ async function swapTokens(vault: Vault, pool: ComposableCustomPool, usdc: TestTo
 
         await vw.printTokens(poolId);
         await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
-        line("SWAP GIVEN IN end");
     }
 
+    await delay(2000);
 
     if (true) {
-        line("BUY 30 USDC");
+        line("BUY 100 USDC");
         await vw.printTokens(poolId);
         await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
 
-        const actualAmountOut = scaleUp(30, 6);
+        const actualAmountOut = scaleUp(100, 6);
         //const expectedAmountIn = await pt.queryGivenOut(xcqr, usdc, actualAmountOut, trader);
         const actualAmountIn = await pt.swapGivenOut(xcqr, usdc, actualAmountOut, trader);
 
@@ -239,7 +169,6 @@ async function swapTokens(vault: Vault, pool: ComposableCustomPool, usdc: TestTo
 
         await vw.printTokens(poolId);
         await TokenWrapper.printTokens([usdc.address, xcqr.address], trader.address);
-        line("SWAP GIVEN OUT end");
     }
 
 }
@@ -250,7 +179,8 @@ async function swapRoundTrip(vault: Vault, pool: ComposableCustomPool, usdc: Tes
     const pt = new PoolTrader(vault, pool);
     const poolId = await pool.getPoolId();
 
-    const qty: number = 200;
+    const qty = 900;
+
     {
         line("BUY 10 XCHR");
         await vw.printTokens(poolId);
@@ -271,6 +201,7 @@ async function swapRoundTrip(vault: Vault, pool: ComposableCustomPool, usdc: Tes
             await printSwap(usdc, ain, xcqr, aout);
         }
     }
+    await delay(2000);
 
     if (true) {
         line("SELL 20 XCHR");
@@ -292,6 +223,8 @@ async function swapRoundTrip(vault: Vault, pool: ComposableCustomPool, usdc: Tes
             await printSwap(xcqr, ain, usdc, aout);
         }
     }
+    await delay(2000);
+
     if (true) {
         line("BUY 10 XCHR");
         await vw.printTokens(poolId);
@@ -317,36 +250,70 @@ async function swapRoundTrip(vault: Vault, pool: ComposableCustomPool, usdc: Tes
 
 async function main() {
 
-    const [admin, lp, trader] = await ethers.getSigners();
+    const vaultAddress: string = "0xBA12222222228d8Ba445958a75a0704d566BF2C8";
+    const libraryAddress: string = '0xCc3650F13Aa626222e41101a6C9Aac31554E481E';
+    const poolAddress: string = "0xCd30aEB2402De66c8feF819E828EbaaA5B0D67a0";
 
-    console.log("admin:", admin.address, "eth: ", (await admin.getBalance()).toString());
-    console.log("LP   :", lp.address, "eth: ", (await lp.getBalance()).toString());
-    console.log("tradr:", trader.address, "eth: ", (await trader.getBalance()).toString());
+    // const signerAddress: string = "0xd713Eef55104c67cA1A6a1dB617FaeE1831cF5e3";
+    //await network.provider.request({method: "hardhat_impersonateAccount", params: [signerAddress]});
+    //const signer = await ethers.provider.getSigner();
 
-    const {weth, usdc, xcqr} = await deployTokens(admin, lp, trader);
+    const [signer] = await ethers.getSigners();
 
-    const {vault, customMath} = await deployVault(admin, weth);
+    console.log(await signer.getAddress());
 
-    const pool = await deployPool(vault, customMath, admin, usdc, xcqr);
+    await delay(1000);
 
-    // const pm = new PoolManager(vault, pool);
-    // await pm.diagnostics();
-    {
-        //console.log("PERMISSIONS BEGIN");
-        //await vd.grantPermission(vault.address, 'joinPool', lp.address);
-        //await vd.grantPermission(vault.address, 'exitPool', lp.address);
-        //console.log("PERMISSIONS END");
-    }
+    const vault = await VaultDeployer.connect(vaultAddress, signer);
 
-    await initPool(vault, pool, admin, lp);
+    await delay(1000);
 
-    //await provideLiquidity(vault, pool, admin, lp);
+    const vw = new VaultWrapper(vault);
 
-    //await swapTokens(vault, pool, usdc, xcqr, trader);
+    await delay(1000);
 
-    await swapRoundTrip(vault, pool, usdc, xcqr, trader);
+    const pool = await PoolDeployer.connect(poolAddress, libraryAddress, signer);
 
-    await new PoolReader(pool).read();
+    await delay(1000);
+
+    await delay(1000);
+
+    const poolId = await pool.getPoolId();
+
+    await delay(1000);
+
+    const tokens = await vw.getTokens(poolId);
+
+    await delay(1000);
+
+    {// Amplification
+        const {value1, isUpdating1, precision1} = await pool.getAmplificationParameter1();
+        console.log("A1: ", value1, isUpdating1, precision1);
+        const {value2, isUpdating2, precision2} = await pool.getAmplificationParameter2();
+        console.log("A2: ", value2, isUpdating2, precision2);
+     }
+
+    await vw.printTokens(poolId);
+
+    await delay(1000);
+
+    //await provideLiquidity(vault, pool, signer, signer);
+
+    await delay(1000);
+
+    const usdcAddress: string = '0xD87Ba7A50B2E7E660f678A895E4B72E7CB4CCd9C';
+    const usdc = await TokenDeployer.connect(usdcAddress, signer);
+    await delay(1000);
+
+    const xchrAddress: string = '0x9F205c61DA8eE3be4805B15b003b4732603f3631';
+    const xcqr = await TokenDeployer.connect(xchrAddress, signer);
+    await delay(1000);
+
+    // await swapTokens(vault, pool, usdc, xcqr, signer);
+
+    await delay(1000);
+
+    await swapRoundTrip(vault, pool, usdc, xcqr, signer);
 
 }
 

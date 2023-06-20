@@ -10,22 +10,17 @@ export class PoolDeployer {
 
     public readonly desc: string = "XCQR CustomSwap XCQR/USDC";
     public readonly symbol: string = "BPTT";
-    public readonly A1: number;
-    public readonly A2: number;
     public readonly MONTH = 30 * 24 * 60 * 60;
     public readonly swapFee = ethers.BigNumber.from(10).pow(16);
 
     public readonly maxYieldValue = fp(0.5);
     public readonly maxAUMValue = fp(0.5);
 
-    public readonly xcqrRate: number = 3;
+    public readonly xcqrRate: number = 1;
     public readonly usdcRate: number = 1;
 
-    constructor(customMath: string, A1: number, A2: number) {
+    constructor(customMath: string) {
         this.customMath = customMath;
-        this.A1 = A1;
-        this.A2 = A2;
-        console.log("A1", A1, "A2", A2);
     }
 
     private async deployProtocolFeeProvider(vault: string) {
@@ -82,9 +77,23 @@ export class PoolDeployer {
         return factory.attach(address);
     }
 
-    public async deployPool(vaultAddress: string, tokens: string[], admin: string) {
+    public static async attachRateProvider(address: string) {
+        const factory = await ethers.getContractFactory("CustomPoolRateProvider");
+        return factory.attach(address);
+    }
+
+    public async deployPool(vaultAddress: string, tokens: string[], amps: number[], admin: string) {
 
         const factory = await this.deployCustomSwapFactory(vaultAddress);
+
+        if (tokens[0].toUpperCase() > tokens[1].toUpperCase()){
+            const tmp1 = tokens[0];
+            tokens[0] = tokens[1];
+            tokens[1] = tmp1;
+            const tmp2 = amps[0];
+            amps[0] = amps[1];
+            amps[1] = tmp2;
+        }
 
         tokens.sort((one, two) => (one.toUpperCase() > two.toUpperCase() ? 1 : -1));
 
@@ -120,8 +129,8 @@ export class PoolDeployer {
             this.desc,
             this.symbol,
             tokens,
-            this.A1,
-            this.A2,
+            amps[0],
+            amps[1],
             providers,
             [this.MONTH, this.MONTH],
             [false, false],
